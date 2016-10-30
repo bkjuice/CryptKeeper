@@ -117,11 +117,17 @@ namespace CryptKeeper.Tests
 
         private static void AssertSecretMatches(byte[] data)
         {
+            // The clearing of the source secret will happen after construction 
+            // and for assertion purposes, a copy must be made. This is opposite of 
+            // production intent and for testing purposes only, and such copies should be flagged
+            // in code review:
+            var copy = new byte[data.Length];
+            data.CopyTo(copy, 0);
             using (var secret = new Secret(data))
             {
                 secret.UseBytes(b =>
                 {
-                    b.Should().ContainInOrder(data);
+                    b.Should().ContainInOrder(copy);
                 });
             }
         }

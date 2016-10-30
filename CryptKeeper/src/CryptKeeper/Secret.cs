@@ -26,34 +26,18 @@ namespace CryptKeeper
 
             this.size = value.Length;
             var len = ((value.Length - 1) / 2) + 1;
-            unsafe
+            var chars = new char[len];
+
+            try
             {
-                try
-                {
-                    // A stack allocated char array is natural fit for the pointer based secure string ctor overload,
-                    // and +offers deterministic destruction for this scope.
-                    // However, this adds a small risk of an allocation fail if the current thread is in a deep call stack.
-                    // Typical use of a Secret instance would be to keep a set of initialized secrets in memory for the 
-                    // life of an app domain, in which case the ctor call will be in a very shallow call stack.
-                    // Is this an attack vector? Only if a process is completely hijacked, and all bets are off at that point.
-                    // By default, as of 10/2016, the default stack size is 1MB, and the max allocation will be 2KB:
-                    var chars = stackalloc char[len]; 
-                    var i = 0; var c = 0;
-                    for (i = 0; i < value.Length - 1; i += 2)
-                    {
-                        chars[c] = (char)(value[i] << 8 + value[i + 1]);
-                        c++;
-                    }
-
-                    if (i < value.Length) chars[c] = (char)(value[i] << 8);
-
-                    this.secureValue = new SecureString(chars, len);
-                    this.secureValue.MakeReadOnly();
-                }
-                finally
-                {
-                    Array.Clear(value, 0, value.Length);
-                }
+                Buffer.BlockCopy(value, 0, chars, 0, value.Length);
+                unsafe { fixed (char* p = chars) this.secureValue = new SecureString(p, len); }
+                this.secureValue.MakeReadOnly();
+            }
+            finally
+            {
+                Array.Clear(value, 0, value.Length);
+                Array.Clear(chars, 0, len);
             }
         }
 
@@ -155,31 +139,18 @@ namespace CryptKeeper
             var len = secureValue.Length;
             var value = new char[len];
              
+            var bytes = new byte[this.size];
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { } finally
+            try { }
+            finally
             {
                 IntPtr ptr = Marshal.SecureStringToCoTaskMemUnicode(secureValue);
                 Marshal.Copy(ptr, value, 0, len);
                 Marshal.ZeroFreeCoTaskMemUnicode(ptr);
+                Buffer.BlockCopy(value, 0, bytes, 0, this.size);
+                Array.Clear(value, 0, value.Length);
             }
 
-            var bytes = new byte[this.size];
-            var b = 0;
-
-            const char byte1 = (char)(255 << 8);
-            const char byte2 = (char)(0 << 8 + 255);
-            for (int i = 0; i < value.Length; ++i)
-            {
-                bytes[b] = (byte)(value[i] & byte1);
-                bytes[b++] = (byte)(value[i] & byte2);
-            }
-
-            if (b < this.size)
-            {
-                bytes[b] = (byte)(value[value.Length - 1] & byte1);
-            }
-
-            Array.Clear(value, 0, value.Length);
             return bytes;
         }
 
