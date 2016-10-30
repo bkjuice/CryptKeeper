@@ -77,7 +77,7 @@ namespace CryptKeeper
             GC.SuppressFinalize(this);
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
         public void UseBytes(Action<byte[]> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -94,7 +94,7 @@ namespace CryptKeeper
             }
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
         public void UseBytes<T1>(T1 arg1, Action<T1, byte[]> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -111,7 +111,7 @@ namespace CryptKeeper
             }
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
         public TReturn UseBytes<TReturn>(Func<byte[], TReturn> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -128,7 +128,7 @@ namespace CryptKeeper
             }
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
         public TReturn UseBytes<T1, TReturn>(T1 arg1, Func<T1, byte[], TReturn> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
