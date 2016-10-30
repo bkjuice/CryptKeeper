@@ -8,6 +8,13 @@ namespace CryptKeeper.Tests
     public class SecretTests
     {
         [TestMethod]
+        public void SecretHandlesEmptyArray()
+        {
+            Action test = () => new Secret(new byte[] { });
+            test.ShouldNotThrow();
+        }
+
+        [TestMethod]
         public void SecretThrowsObjectDisposedExceptionWhenAlreadyDisposed()
         {
             var secret = new Secret(new byte[] { });

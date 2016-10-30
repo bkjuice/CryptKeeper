@@ -28,6 +28,7 @@ namespace CryptKeeper
             var len = ((value.Length - 1) / 2) + 1;
             var chars = new char[len];
 
+            RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
                 Buffer.BlockCopy(value, 0, chars, 0, value.Length);
@@ -136,19 +137,14 @@ namespace CryptKeeper
                 return new byte[0];
             }
 
-            var len = secureValue.Length;
-            var value = new char[len];
-             
             var bytes = new byte[this.size];
             RuntimeHelpers.PrepareConstrainedRegions();
             try { }
             finally
             {
                 IntPtr ptr = Marshal.SecureStringToCoTaskMemUnicode(secureValue);
-                Marshal.Copy(ptr, value, 0, len);
+                Marshal.Copy(ptr, bytes, 0, this.size);
                 Marshal.ZeroFreeCoTaskMemUnicode(ptr);
-                Buffer.BlockCopy(value, 0, bytes, 0, this.size);
-                Array.Clear(value, 0, value.Length);
             }
 
             return bytes;
