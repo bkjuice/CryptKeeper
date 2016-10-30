@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
 
 namespace CryptKeeper
 {
+    [SecuritySafeCritical]
     public sealed class Secret : IDisposable
     {
         private readonly SecureString secureValue;
@@ -14,41 +16,44 @@ namespace CryptKeeper
 
         private bool disposed;
 
+        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
         public Secret(byte[] value)
         {
             Contract.Requires<ArgumentNullException>(value != null);
 
+            // Current max allowed RSA key is 16Kb:
+            Contract.Requires<ArgumentOutOfRangeException>(value.Length < 2049, "The max supported secret size is 2KB (2048 bytes).");
+
             this.size = value.Length;
-            var chars = new char[((value.Length - 1) / 2) + 1];
-            var i = 0;
-            var c = 0;
-            for (i = 0; i < value.Length - 1; i += 2)
+            var len = ((value.Length - 1) / 2) + 1;
+            unsafe
             {
-                chars[c] = (char)(value[i] << 8 + value[i + 1]);
-                c++;
-            }
-
-            if (i < value.Length)
-            {
-                chars[c] = (char)(value[i] << 8);
-            }
-
-            try
-            {
-                unsafe
+                try
                 {
-                    fixed (char* p = chars)
+                    // A stack allocated char array is natural fit for the pointer based secure string ctor overload,
+                    // and +offers deterministic destruction for this scope.
+                    // However, this adds a small risk of an allocation fail if the current thread is in a deep call stack.
+                    // Typical use of a Secret instance would be to keep a set of initialized secrets in memory for the 
+                    // life of an app domain, in which case the ctor call will be in a very shallow call stack.
+                    // Is this an attack vector? Only if a process is completely hijacked, and all bets are off at that point.
+                    // By default, as of 10/2016, the default stack size is 1MB, and the max allocation will be 2KB:
+                    var chars = stackalloc char[len]; 
+                    var i = 0; var c = 0;
+                    for (i = 0; i < value.Length - 1; i += 2)
                     {
-                        this.secureValue = new SecureString(p, chars.Length);
+                        chars[c] = (char)(value[i] << 8 + value[i + 1]);
+                        c++;
                     }
-                }
 
-                this.secureValue.MakeReadOnly();
-            }
-            finally
-            {
-                Array.Clear(chars, 0, chars.Length);
-                Array.Clear(value, 0, value.Length);
+                    if (i < value.Length) chars[c] = (char)(value[i] << 8);
+
+                    this.secureValue = new SecureString(chars, len);
+                    this.secureValue.MakeReadOnly();
+                }
+                finally
+                {
+                    Array.Clear(value, 0, value.Length);
+                }
             }
         }
 
@@ -72,6 +77,7 @@ namespace CryptKeeper
             GC.SuppressFinalize(this);
         }
 
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void UseBytes(Action<byte[]> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -88,6 +94,7 @@ namespace CryptKeeper
             }
         }
 
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void UseBytes<T1>(T1 arg1, Action<T1, byte[]> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -104,6 +111,7 @@ namespace CryptKeeper
             }
         }
 
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public TReturn UseBytes<TReturn>(Func<byte[], TReturn> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -120,6 +128,7 @@ namespace CryptKeeper
             }
         }
 
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public TReturn UseBytes<T1, TReturn>(T1 arg1, Func<T1, byte[], TReturn> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -179,7 +188,7 @@ namespace CryptKeeper
         {
             if (this.disposed)
             {
-                throw new ObjectDisposedException("This Secret object instance is disposed and cannot be used.");
+                throw new ObjectDisposedException("The secret instance is disposed and can no longer be used.");
             }
         }
     }
