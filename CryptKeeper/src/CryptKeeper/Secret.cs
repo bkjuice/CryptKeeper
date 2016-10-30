@@ -154,13 +154,12 @@ namespace CryptKeeper
 
             var len = secureValue.Length;
             var value = new char[len];
-
-            var ptr = Marshal.SecureStringToCoTaskMemUnicode(secureValue);
-            Marshal.Copy(ptr, value, 0, len);
+             
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
-            finally
+            try { } finally
             {
+                IntPtr ptr = Marshal.SecureStringToCoTaskMemUnicode(secureValue);
+                Marshal.Copy(ptr, value, 0, len);
                 Marshal.ZeroFreeCoTaskMemUnicode(ptr);
             }
 
