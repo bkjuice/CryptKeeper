@@ -19,7 +19,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(value != null);
 
             this.size = value.Length;
-            var chars = new char[checked((value.Length - 1) / 2) + 1];
+            var chars = new char[((value.Length - 1) / 2) + 1];
             var i = 0;
             var c = 0;
             for (i = 0; i < value.Length - 1; i += 2)
