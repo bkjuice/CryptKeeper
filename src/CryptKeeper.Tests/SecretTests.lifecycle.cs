@@ -5,6 +5,7 @@ using System.Security;
 
 namespace CryptKeeper.Tests
 {
+    [TestClass]
     public partial class SecretTests
     {
         [TestMethod]
@@ -57,6 +58,24 @@ namespace CryptKeeper.Tests
             var theSecret = "don't tell anyone";
             using (var s = new Secret(theSecret)) { }
             theSecret.ToCharArray().Should().OnlyContain(c => c == '\0');
+        }
+
+        [TestMethod]
+        public void SecretIndicatesObjectIsDisposedWhenDisposed()
+        {
+            var secret = new Secret(new byte[] { });
+            secret.IsDisposed.Should().BeFalse();
+            secret.Dispose();
+            secret.IsDisposed.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void SecretThrowsObjectDisposedExceptionWhenAlreadyDisposed()
+        {
+            var secret = new Secret(new byte[] { });
+            secret.Dispose();
+            Action test = () => secret.UseAsBytes(b => { });
+            test.ShouldThrow<ObjectDisposedException>();
         }
     }
 }
