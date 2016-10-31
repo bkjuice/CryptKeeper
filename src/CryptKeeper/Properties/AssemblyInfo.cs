@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security;
 
@@ -14,4 +15,5 @@ using System.Security;
 [assembly: Guid("75c22a3d-e719-4863-a406-1e3d5e3e33c2")]
 [assembly: AssemblyVersion("0.8.0.0")]
 [assembly: AssemblyFileVersion("0.8.0.0")]
+[assembly: CLSCompliant(true)]
 [assembly: SecurityRules(SecurityRuleSet.Level2)]

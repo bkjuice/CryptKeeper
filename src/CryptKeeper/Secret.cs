@@ -7,7 +7,6 @@ using System.Security;
 
 namespace CryptKeeper
 {
-    [SecuritySafeCritical]
     public sealed class Secret : IDisposable
     {
         private readonly SecureString secureValue;
@@ -99,7 +98,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectBytes(this.secureValue);
+            var value = this.UnprotectBytes();
             try
             {
                 callback(value);
@@ -115,7 +114,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectBytes(this.secureValue);
+            var value = UnprotectBytes();
             try
             {
                 callback(state, value);
@@ -131,7 +130,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectBytes(this.secureValue);
+            var value = this.UnprotectBytes();
             try
             {
                 return callback(value);
@@ -147,7 +146,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectBytes(this.secureValue);
+            var value = this.UnprotectBytes();
             try
             {
                 return callback(state, value);
@@ -164,13 +163,13 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectBytes(this.secureValue);
-            try
-            {
-                handler.Callback(value);
-            }
+            var value = this.UnprotectBytes();
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { }
             finally
             {
+                handler.Callback(value);
                 Array.Clear(value, 0, value.Length);
             }
         }
@@ -181,13 +180,12 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectBytes(this.secureValue);
-            try
+            var value = this.UnprotectBytes();
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { } finally
             {
                 handler.Callback(state, value);
-            }
-            finally
-            {
                 Array.Clear(value, 0, value.Length);
             }
         }
@@ -198,16 +196,18 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectBytes(this.secureValue);
-            try
+            var value = this.UnprotectBytes();
+
+            TResult result;
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { } finally
             {
-                return handler.Callback(value);
-            }
-            finally
-            {
+                result = handler.Callback(value);
                 Array.Clear(value, 0, value.Length);
             }
-        }
+
+            return result;
+        }  
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public TResult UseAsBytes<T, TResult>(T state, IReliableSecretFunc<T, TResult> handler)
@@ -215,15 +215,17 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectBytes(this.secureValue);
-            try
+            var value = this.UnprotectBytes();
+
+            TResult result;
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { } finally
             {
-                return handler.Callback(state, value);
-            }
-            finally
-            {
+                result = handler.Callback(state, value);
                 Array.Clear(value, 0, value.Length);
             }
+
+            return result;
         }
 
         public void UseAsString(Action<string> callback)
@@ -231,7 +233,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectString(this.secureValue);
+            var value = this.UnprotectString();
             try
             {
                 callback(value);
@@ -247,7 +249,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectString(this.secureValue);
+            var value = this.UnprotectString();
             try
             {
                 callback(state, value);
@@ -263,7 +265,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectString(this.secureValue);
+            var value = this.UnprotectString();
             try
             {
                 return callback(value);
@@ -279,7 +281,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectString(this.secureValue);
+            var value = this.UnprotectString();
             try
             {
                 return callback(state, value);
@@ -296,13 +298,12 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectString(this.secureValue);
-            try
+            var value = this.UnprotectString();
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { } finally
             {
                 handler.Callback(value);
-            }
-            finally
-            {
                 value.Nullify();
             }
         }
@@ -313,13 +314,12 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectString(this.secureValue);
-            try
+            var value = this.UnprotectString();
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { } finally
             {
                 handler.Callback(state, value);
-            }
-            finally
-            {
                 value.Nullify();
             }
         }
@@ -330,15 +330,17 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectString(this.secureValue);
-            try
+            var value = this.UnprotectString();
+
+            TResult result;
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { } finally
             {
-                return handler.Callback(value);
-            }
-            finally
-            {
+                result = handler.Callback(value);
                 value.Nullify();
             }
+
+            return result;
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
@@ -347,18 +349,20 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectString(this.secureValue);
-            try
+            var value = this.UnprotectString();
+
+            TResult result;
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { } finally
             {
-                return handler.Callback(state, value);
-            }
-            finally
-            {
+                result = handler.Callback(state, value);
                 value.Nullify();
             }
+
+            return result;
         }
 
-        private byte[] UnprotectBytes(SecureString secureValue)
+        private byte[] UnprotectBytes()
         {
             if (this.size == 0)
             {
@@ -370,7 +374,7 @@ namespace CryptKeeper
             try { }
             finally
             {
-                IntPtr ptr = Marshal.SecureStringToCoTaskMemUnicode(secureValue);
+                IntPtr ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
                 Marshal.Copy(ptr, bytes, 0, this.size);
                 Marshal.ZeroFreeCoTaskMemUnicode(ptr);
             }
@@ -378,7 +382,7 @@ namespace CryptKeeper
             return bytes;
         }
 
-        private string UnprotectString(SecureString secureValue)
+        private string UnprotectString()
         {
             if (this.size == 0)
             {
@@ -390,7 +394,7 @@ namespace CryptKeeper
             try { }
             finally
             {
-                IntPtr ptr = Marshal.SecureStringToCoTaskMemUnicode(secureValue);
+                IntPtr ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
                 Marshal.Copy(ptr, chars, 0, this.size);
                 Marshal.ZeroFreeCoTaskMemUnicode(ptr);
             }

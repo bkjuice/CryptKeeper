@@ -12,7 +12,7 @@ namespace CryptKeeper
             RuntimeHelpers.PrepareConstrainedRegions();
             try { } finally
             {
-                if (!string.IsNullOrWhiteSpace(value))
+                if (!string.IsNullOrEmpty(value))
                 {
                     var len = value.Length;
                     var handle = GCHandle.Alloc(value, GCHandleType.Pinned);
