@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptKeeper.Tests", "src\Cr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptKeeper.ReliabilityProofs.Lib", "src\CryptKeeper.ReliabilityProofs.Lib\CryptKeeper.ReliabilityProofs.Lib.csproj", "{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptKeeper.ReliabilityProofs", "src\CryptKeeper.Reliability\CryptKeeper.ReliabilityProofs.csproj", "{D7286B4F-EBC8-4863-85ED-9BE1838A6052}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptKeeper.ReliabilityProofs", "src\CryptKeeper.ReliabilityProofs\CryptKeeper.ReliabilityProofs.csproj", "{D7286B4F-EBC8-4863-85ED-9BE1838A6052}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
