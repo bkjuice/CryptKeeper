@@ -16,7 +16,6 @@ namespace CryptKeeper
 
         private bool disposed;
 
-        [ReliabilityContract(Consistency.MayCorruptInstance, Cer.None)]
         public Secret(byte[] value)
         {
             Contract.Requires<ArgumentNullException>(value != null);
@@ -39,7 +38,6 @@ namespace CryptKeeper
             }
         }
 
-        [ReliabilityContract(Consistency.MayCorruptInstance, Cer.None)]
         public Secret(SecureString value)
         {
             Contract.Requires<ArgumentNullException>(value != null);
@@ -52,7 +50,6 @@ namespace CryptKeeper
             }
         }
 
-        [ReliabilityContract(Consistency.MayCorruptInstance, Cer.None)]
         public Secret(string value)
         {
             Contract.Requires<ArgumentNullException>(value != null);
@@ -78,6 +75,14 @@ namespace CryptKeeper
             }
         }
 
+        public bool IsDisposed
+        {
+            get
+            {
+                return this.disposed;
+            }
+        }
+
         public void Dispose()
         {
             if (!this.disposed)
@@ -89,7 +94,6 @@ namespace CryptKeeper
             GC.SuppressFinalize(this);
         }
 
-        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
         public void UseAsBytes(Action<byte[]> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -106,7 +110,6 @@ namespace CryptKeeper
             }
         }
 
-        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
         public void UseAsBytes<T>(T state, Action<T, byte[]> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -123,7 +126,6 @@ namespace CryptKeeper
             }
         }
 
-        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
         public TResult UseAsBytes<TResult>(Func<byte[], TResult> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -140,7 +142,6 @@ namespace CryptKeeper
             }
         }
 
-        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
         public TResult UseAsBytes<T, TResult>(T state, Func<T, byte[], TResult> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -225,6 +226,70 @@ namespace CryptKeeper
             }
         }
 
+        public void UseAsString(Action<string> callback)
+        {
+            Contract.Requires<ArgumentNullException>(callback != null);
+
+            this.ThrowIfDisposed();
+            var value = UnprotectString(this.secureValue);
+            try
+            {
+                callback(value);
+            }
+            finally
+            {
+                value.Nullify();
+            }
+        }
+
+        public void UseAsString<T>(T state, Action<T, string> callback)
+        {
+            Contract.Requires<ArgumentNullException>(callback != null);
+
+            this.ThrowIfDisposed();
+            var value = UnprotectString(this.secureValue);
+            try
+            {
+                callback(state, value);
+            }
+            finally
+            {
+                value.Nullify();
+            }
+        }
+
+        public TResult UseAsString<TResult>(Func<string, TResult> callback)
+        {
+            Contract.Requires<ArgumentNullException>(callback != null);
+
+            this.ThrowIfDisposed();
+            var value = UnprotectString(this.secureValue);
+            try
+            {
+                return callback(value);
+            }
+            finally
+            {
+                value.Nullify();
+            }
+        }
+
+        public TResult UseAsString<T, TResult>(T state, Func<T, string, TResult> callback)
+        {
+            Contract.Requires<ArgumentNullException>(callback != null);
+
+            this.ThrowIfDisposed();
+            var value = UnprotectString(this.secureValue);
+            try
+            {
+                return callback(state, value);
+            }
+            finally
+            {
+                value.Nullify();
+            }
+        }
+
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void UseAsString(IReliableSecretStringAction handler)
         {
@@ -286,74 +351,6 @@ namespace CryptKeeper
             try
             {
                 return handler.Callback(state, value);
-            }
-            finally
-            {
-                value.Nullify();
-            }
-        }
-
-        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
-        public void UseAsString(Action<string> callback)
-        {
-            Contract.Requires<ArgumentNullException>(callback != null);
-
-            this.ThrowIfDisposed();
-            var value = UnprotectString(this.secureValue);
-            try
-            {
-                callback(value);
-            }
-            finally
-            {
-                value.Nullify();
-            }
-        }
-
-        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
-        public void UseAsString<T>(T state, Action<T, string> callback)
-        {
-            Contract.Requires<ArgumentNullException>(callback != null);
-
-            this.ThrowIfDisposed();
-            var value = UnprotectString(this.secureValue);
-            try
-            {
-                callback(state, value);
-            }
-            finally
-            {
-                value.Nullify();
-            }
-        }
-
-        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
-        public TResult UseAsString<TResult>(Func<string, TResult> callback)
-        {
-            Contract.Requires<ArgumentNullException>(callback != null);
-
-            this.ThrowIfDisposed();
-            var value = UnprotectString(this.secureValue);
-            try
-            {
-                return callback(value);
-            }
-            finally
-            {
-                value.Nullify();
-            }
-        }
-
-        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
-        public TResult UseAsString<T, TResult>(T state, Func<T, string, TResult> callback)
-        {
-            Contract.Requires<ArgumentNullException>(callback != null);
-
-            this.ThrowIfDisposed();
-            var value = UnprotectString(this.secureValue);
-            try
-            {
-                return callback(state, value);
             }
             finally
             {
