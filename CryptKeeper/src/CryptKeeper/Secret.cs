@@ -55,6 +55,8 @@ namespace CryptKeeper
         [ReliabilityContract(Consistency.MayCorruptInstance, Cer.None)]
         public Secret(string value)
         {
+            Contract.Requires<ArgumentNullException>(value != null);
+
             this.size = value.Length;
             try
             {
