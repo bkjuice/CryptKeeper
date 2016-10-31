@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptKeeper", "src\CryptKee
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4973669D-3EFA-4D8E-B7AD-D6711C08FE22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptKeeper.Tests", "CryptKeeper.Tests\CryptKeeper.Tests.csproj", "{AC75265F-3CE0-4A33-BB52-47B9B0012310}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptKeeper.Tests", "src\CryptKeeper.Tests\CryptKeeper.Tests.csproj", "{AC75265F-3CE0-4A33-BB52-47B9B0012310}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
