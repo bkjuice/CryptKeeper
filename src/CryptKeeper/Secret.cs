@@ -42,7 +42,7 @@ namespace CryptKeeper
             }
             finally
             {
-                Array.Clear(value, 0, value.Length);
+                value.ConstrainedClear();
             }
         }
 
