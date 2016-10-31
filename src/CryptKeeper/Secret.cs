@@ -32,13 +32,12 @@ namespace CryptKeeper
                 {
                     Buffer.BlockCopy(value, 0, chars, 0, value.Length);
                     unsafe { fixed (char* p = chars) this.secureValue = new SecureString(p, len); }
+                    this.secureValue.MakeReadOnly();
                 }
                 finally
                 {
                     chars.ConstrainedClear();
                 }
-
-                this.secureValue.MakeReadOnly();
             }
             finally
             {
