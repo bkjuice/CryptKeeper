@@ -19,7 +19,7 @@ namespace CryptKeeper.Tests
         {
             var secret = new Secret(new byte[] { });
             secret.Dispose();
-            Action test = () => secret.UseBytes(b => { });
+            Action test = () => secret.Use(b => { });
             test.ShouldThrow<ObjectDisposedException>();
         }
 
@@ -33,31 +33,31 @@ namespace CryptKeeper.Tests
         }
 
         [TestMethod]
-        public void SecretUseBytesFuncReturnsFunctionValue()
+        public void SecretUseFuncReturnsFunctionValue()
         {
             using (var secret = new Secret(new byte[] { }))
             {
-                secret.UseBytes(b => true).Should().BeTrue();
+                secret.Use(b => true).Should().BeTrue();
             }
         }
 
         [TestMethod]
-        public void SecretUseBytesActionPassesStateArgument()
+        public void SecretUseActionPassesStateArgument()
         {
             var state = new object();
             using (var secret = new Secret(new byte[] { }))
             {
-                secret.UseBytes(state, (s, b) => { ReferenceEquals(s, state).Should().BeTrue(); });
+                secret.Use(state, (s, b) => { ReferenceEquals(s, state).Should().BeTrue(); });
             }
         }
 
         [TestMethod]
-        public void SecretUseBytesFuncPassesStateArgument()
+        public void SecretUseFuncPassesStateArgument()
         {
             var state = new object();
             using (var secret = new Secret(new byte[] { }))
             {
-                secret.UseBytes(state, (s, b) => ReferenceEquals(s, state)).Should().BeTrue();
+                secret.Use(state, (s, b) => ReferenceEquals(s, state)).Should().BeTrue();
             }
         }
 
@@ -69,7 +69,7 @@ namespace CryptKeeper.Tests
             {
                 try
                 {
-                    secret.UseBytes(b => { data = b; throw new InvalidOperationException(); });
+                    secret.Use(b => { data = b; throw new InvalidOperationException(); });
                 }
                 catch (InvalidOperationException) { }
             }
@@ -83,7 +83,7 @@ namespace CryptKeeper.Tests
             using (var secret = new Secret(new byte[] { 1, 2, 3, 4, 5 }))
             {
                 byte[] data = null;
-                secret.UseBytes(b => { data = b; });
+                secret.Use(b => { data = b; });
                 data.Should().OnlyContain(b => b == 0);
             }
         }
@@ -132,7 +132,7 @@ namespace CryptKeeper.Tests
             data.CopyTo(copy, 0);
             using (var secret = new Secret(data))
             {
-                secret.UseBytes(b =>
+                secret.Use(b =>
                 {
                     b.Should().ContainInOrder(copy);
                 });

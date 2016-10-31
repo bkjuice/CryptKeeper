@@ -16,19 +16,16 @@ namespace CryptKeeper
 
         private bool disposed;
 
-        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
+        [ReliabilityContract(Consistency.MayCorruptInstance, Cer.None)]
         public Secret(byte[] value)
         {
             Contract.Requires<ArgumentNullException>(value != null);
-
-            // Current max allowed RSA key is 16Kb:
             Contract.Requires<ArgumentOutOfRangeException>(value.Length < 2049, "The max supported secret size is 2KB (2048 bytes).");
 
             this.size = value.Length;
             var len = ((value.Length - 1) / 2) + 1;
             var chars = new char[len];
 
-            RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
                 Buffer.BlockCopy(value, 0, chars, 0, value.Length);
@@ -37,8 +34,12 @@ namespace CryptKeeper
             }
             finally
             {
-                Array.Clear(value, 0, value.Length);
-                Array.Clear(chars, 0, len);
+                RuntimeHelpers.PrepareConstrainedRegions();
+                try { } finally
+                {
+                    Array.Clear(value, 0, value.Length);
+                    Array.Clear(chars, 0, len);
+                }
             }
         }
 
@@ -63,7 +64,7 @@ namespace CryptKeeper
         }
 
         [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
-        public void UseBytes(Action<byte[]> callback)
+        public void Use(Action<byte[]> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
 
@@ -79,16 +80,33 @@ namespace CryptKeeper
             }
         }
 
-        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
-        public void UseBytes<T1>(T1 arg1, Action<T1, byte[]> callback)
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+        public void Use(IPartiallyReliableSecretAction handler)
         {
-            Contract.Requires<ArgumentNullException>(callback != null);
+            Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
             var value = UnprotectBytes(this.secureValue);
             try
             {
-                callback(arg1, value);
+                handler.Callback(value);
+            }
+            finally
+            {
+                Array.Clear(value, 0, value.Length);
+            }
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        public void Use(IReliableSecretAction handler)
+        {
+            Contract.Requires<ArgumentNullException>(handler != null);
+
+            this.ThrowIfDisposed();
+            var value = UnprotectBytes(this.secureValue);
+            try
+            {
+                handler.Callback(value);
             }
             finally
             {
@@ -97,7 +115,58 @@ namespace CryptKeeper
         }
 
         [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
-        public TReturn UseBytes<TReturn>(Func<byte[], TReturn> callback)
+        public void Use<T>(T state, Action<T, byte[]> callback)
+        {
+            Contract.Requires<ArgumentNullException>(callback != null);
+
+            this.ThrowIfDisposed();
+            var value = UnprotectBytes(this.secureValue);
+            try
+            {
+                callback(state, value);
+            }
+            finally
+            {
+                Array.Clear(value, 0, value.Length);
+            }
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+        public void Use<T>(T state, IPartiallyReliableSecretAction<T> handler)
+        {
+            Contract.Requires<ArgumentNullException>(handler != null);
+
+            this.ThrowIfDisposed();
+            var value = UnprotectBytes(this.secureValue);
+            try
+            {
+                handler.Callback(state, value);
+            }
+            finally
+            {
+                Array.Clear(value, 0, value.Length);
+            }
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        public void Use<T>(T state, IReliableSecretAction<T> handler)
+        {
+            Contract.Requires<ArgumentNullException>(handler != null);
+
+            this.ThrowIfDisposed();
+            var value = UnprotectBytes(this.secureValue);
+            try
+            {
+                handler.Callback(state, value);
+            }
+            finally
+            {
+                Array.Clear(value, 0, value.Length);
+            }
+        }
+
+        [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
+        public TResult Use<TResult>(Func<byte[], TResult> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
 
@@ -113,8 +182,42 @@ namespace CryptKeeper
             }
         }
 
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+        public TResult Use<TResult>(IPartiallyReliableSecretFunc<TResult> handler)
+        {
+            Contract.Requires<ArgumentNullException>(handler != null);
+
+            this.ThrowIfDisposed();
+            var value = UnprotectBytes(this.secureValue);
+            try
+            {
+                return handler.Callback(value);
+            }
+            finally
+            {
+                Array.Clear(value, 0, value.Length);
+            }
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        public TResult Use<TResult>(IReliableSecretFunc<TResult> handler)
+        {
+            Contract.Requires<ArgumentNullException>(handler != null);
+
+            this.ThrowIfDisposed();
+            var value = UnprotectBytes(this.secureValue);
+            try
+            {
+                return handler.Callback(value);
+            }
+            finally
+            {
+                Array.Clear(value, 0, value.Length);
+            }
+        }
+
         [ReliabilityContract(Consistency.MayCorruptAppDomain, Cer.None)]
-        public TReturn UseBytes<T1, TReturn>(T1 arg1, Func<T1, byte[], TReturn> callback)
+        public TResult Use<T, TResult>(T state, Func<T, byte[], TResult> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
 
@@ -122,7 +225,41 @@ namespace CryptKeeper
             var value = UnprotectBytes(this.secureValue);
             try
             {
-                return callback(arg1, value);
+                return callback(state, value);
+            }
+            finally
+            {
+                Array.Clear(value, 0, value.Length);
+            }
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+        public TResult Use<T, TResult>(T state, IPartiallyReliableSecretFunc<T, TResult> handler)
+        {
+            Contract.Requires<ArgumentNullException>(handler != null);
+
+            this.ThrowIfDisposed();
+            var value = UnprotectBytes(this.secureValue);
+            try
+            {
+                return handler.Callback(state, value);
+            }
+            finally
+            {
+                Array.Clear(value, 0, value.Length);
+            }
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        public TResult Use<T, TResult>(T state, IReliableSecretFunc<T, TResult> handler)
+        {
+            Contract.Requires<ArgumentNullException>(handler != null);
+
+            this.ThrowIfDisposed();
+            var value = UnprotectBytes(this.secureValue);
+            try
+            {
+                return handler.Callback(state, value);
             }
             finally
             {

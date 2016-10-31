@@ -129,6 +129,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IPartiallyReliableSecretFunc.cs" />
+    <Compile Include="IPartiallyReliableSecretAction.cs" />
+    <Compile Include="IPartiallyReliableSecretFuncOfT.cs" />
+    <Compile Include="IPartiallyReliableSecretActionOfT.cs" />
+    <Compile Include="IReliableSecretFunc.cs" />
+    <Compile Include="IReliableSecretFuncOfT.cs" />
+    <Compile Include="IReliableSecretActionOfT.cs" />
+    <Compile Include="IReliableSecretAction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Secret.cs" />
   </ItemGroup>
