@@ -125,12 +125,12 @@ namespace CryptKeeper.ReliabilityProofs
             }
             finally
             {
-                StackOverflow();
+                BreakTheStack();
             }
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        private unsafe static void StackOverflow()
+        private unsafe static void BreakTheStack()
         {
             TooBigForTheStack big;
             big.Bytes[int.MaxValue - 1] = 1;
