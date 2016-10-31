@@ -1,20 +1,12 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FluentAssertions;
-using System.Security;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CryptKeeper.Tests
 {
     [TestClass]
-    public class SecretTests
+    public partial class SecretTests
     {
-        [TestMethod]
-        public void SecretHandlesEmptyArray()
-        {
-            Action test = () => new Secret(new byte[] { });
-            test.ShouldNotThrow();
-        }
-
         [TestMethod]
         public void SecretIndicatesObjectIsDisposedWhenDisposed()
         {
@@ -34,29 +26,7 @@ namespace CryptKeeper.Tests
         }
 
         [TestMethod]
-        public void SecretInitializedWithSecureStringMakesSecureStringReadOnly()
-        {
-            using (var s = new SecureString())
-            {
-                using (var secret = new Secret(s))
-                {
-                    secret.SecureValue.IsReadOnly().Should().BeTrue();
-                    ReferenceEquals(secret.SecureValue, s).Should().BeTrue();
-                }
-            }
-        }
-
-        [TestMethod]
-        public void SecretSecureStringIsReadOnly()
-        {
-            using (var secret = new Secret(new byte[] { }))
-            {
-                secret.SecureValue.IsReadOnly().Should().BeTrue();
-            }
-        }
-
-        [TestMethod]
-        public void SecretUseFuncReturnsFunctionValue()
+        public void SecretUseAsBytesFuncReturnsFunctionValue()
         {
             using (var secret = new Secret(new byte[] { }))
             {
@@ -65,7 +35,7 @@ namespace CryptKeeper.Tests
         }
 
         [TestMethod]
-        public void SecretUseActionPassesStateArgument()
+        public void SecretUseAsBytesActionPassesStateArgument()
         {
             var state = new object();
             using (var secret = new Secret(new byte[] { }))
@@ -75,7 +45,7 @@ namespace CryptKeeper.Tests
         }
 
         [TestMethod]
-        public void SecretUseFuncPassesStateArgument()
+        public void SecretUseAsBytesFuncPassesStateArgument()
         {
             var state = new object();
             using (var secret = new Secret(new byte[] { }))
@@ -85,7 +55,7 @@ namespace CryptKeeper.Tests
         }
 
         [TestMethod]
-        public void SecretDestroysDataRegardlessOfException()
+        public void SecretUseAsBytesDestroysValueRegardlessOfException()
         {
             byte[] data = null;
             using (var secret = new Secret(new byte[] { 1, 2, 3, 4, 5 }))
@@ -101,7 +71,7 @@ namespace CryptKeeper.Tests
         }
 
         [TestMethod]
-        public void SecretDestroysTheValueAfterUse()
+        public void SecretUseAsBytesDestroysValueAfterUse()
         {
             using (var secret = new Secret(new byte[] { 1, 2, 3, 4, 5 }))
             {
@@ -112,30 +82,7 @@ namespace CryptKeeper.Tests
         }
 
         [TestMethod]
-        public void SecretDestroysTheInputValue()
-        {
-            var data = new byte[] { 1, 2, 3, 4, 5 };
-            using (var secret = new Secret(data)){ }
-            data.Should().OnlyContain(b => b == 0);
-        }
-
-        [TestMethod]
-        public void SecretThrowsArgumentNullExceptionWhenDataIsNull()
-        {
-            Action test = () => new Secret(default(byte[]));
-            test.ShouldThrow<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public void SecretNullifiesInputString()
-        {
-            var theSecret = "don't tell anyone";
-            using (var s = new Secret(theSecret)) { }
-            theSecret.ToCharArray().Should().OnlyContain(c => c == '\0');
-        }
-
-        [TestMethod]
-        public void SecretNullifiesTheValueAfterUse()
+        public void SecretUseAsStringNullifiesTheValueAfterUse()
         {
             using (var secret = new Secret("this will be all nulls"))
             {
@@ -146,14 +93,14 @@ namespace CryptKeeper.Tests
         }
 
         [TestMethod]
-        public void SecretRoundTripsStringDataAsExpected()
+        public void SecretUseAsStringRoundTripsStringDataAsExpected()
         {
             var theSecret = "don't tell anyone";
             AssertSecretMatches(theSecret);
         }
 
         [TestMethod]
-        public void SecretAsStringTreatsEmptyAsEmpty()
+        public void SecretUseAsStringTreatsEmptyAsEmpty()
         {
             var theSecret = string.Empty;
             AssertSecretMatches(theSecret);
@@ -161,28 +108,28 @@ namespace CryptKeeper.Tests
         }
 
         [TestMethod]
-        public void SecretRoundTripsDataAsExpectedWithEvenByteCount()
+        public void SecretUseAsBytesRoundTripsDataAsExpectedWithEvenByteCount()
         {
             var data = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2 };
             AssertSecretMatches(data);
         }
 
         [TestMethod]
-        public void SecretRoundTripsDataAsExpectedWithOddByteCount()
+        public void SecretUseAsBytesRoundTripsDataAsExpectedWithOddByteCount()
         {
             var data = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3 };
             AssertSecretMatches(data);
         }
 
         [TestMethod]
-        public void SecretIncludesLastZeroAsPartOfValue()
+        public void SecretUseAsBytesIncludesLastZeroAsPartOfValue()
         {
             var data = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 0 };
             AssertSecretMatches(data);
         }
 
         [TestMethod]
-        public void SecretIncludesFirstZeroAsPartOfValue()
+        public void SecretUseAsBytesIncludesFirstZeroAsPartOfValue()
         {
             var data = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 0 };
             AssertSecretMatches(data);

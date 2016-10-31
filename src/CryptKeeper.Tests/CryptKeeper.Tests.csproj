@@ -62,7 +62,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="SecretTests.cs" />
+    <Compile Include="SecretTests.ctor.cs" />
+    <Compile Include="SecretTests.reliableCallbacks.cs" />
+    <Compile Include="SecretTests.usage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringKillerTests.cs" />
     <Compile Include="SupportingTypes\ReliableCallbackStub.cs" />
