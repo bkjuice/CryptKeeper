@@ -70,7 +70,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\CryptKeeper\CryptKeeper.csproj">
+    <ProjectReference Include="..\CryptKeeper\CryptKeeper.csproj">
       <Project>{75c22a3d-e719-4863-a406-1e3d5e3e33c2}</Project>
       <Name>CryptKeeper</Name>
     </ProjectReference>
