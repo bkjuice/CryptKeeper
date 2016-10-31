@@ -9,9 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4973669D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptKeeper.Tests", "src\CryptKeeper.Tests\CryptKeeper.Tests.csproj", "{AC75265F-3CE0-4A33-BB52-47B9B0012310}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptKeeper.ReliabilityProofs", "CryptKeeper.Reliability\CryptKeeper.ReliabilityProofs.csproj", "{D7286B4F-EBC8-4863-85ED-9BE1838A6052}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptKeeper.ReliabilityProofs.Lib", "src\CryptKeeper.ReliabilityProofs.Lib\CryptKeeper.ReliabilityProofs.Lib.csproj", "{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptKeeper.ReliabilityProofs.Lib", "CryptKeeper.ReliabilityProofs.Lib\CryptKeeper.ReliabilityProofs.Lib.csproj", "{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptKeeper.ReliabilityProofs", "src\CryptKeeper.Reliability\CryptKeeper.ReliabilityProofs.csproj", "{D7286B4F-EBC8-4863-85ED-9BE1838A6052}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,21 +27,21 @@ Global
 		{AC75265F-3CE0-4A33-BB52-47B9B0012310}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC75265F-3CE0-4A33-BB52-47B9B0012310}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC75265F-3CE0-4A33-BB52-47B9B0012310}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{AC75265F-3CE0-4A33-BB52-47B9B0012310} = {4973669D-3EFA-4D8E-B7AD-D6711C08FE22}
-		{D7286B4F-EBC8-4863-85ED-9BE1838A6052} = {4973669D-3EFA-4D8E-B7AD-D6711C08FE22}
 		{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C} = {4973669D-3EFA-4D8E-B7AD-D6711C08FE22}
+		{D7286B4F-EBC8-4863-85ED-9BE1838A6052} = {4973669D-3EFA-4D8E-B7AD-D6711C08FE22}
 	EndGlobalSection
 EndGlobal
