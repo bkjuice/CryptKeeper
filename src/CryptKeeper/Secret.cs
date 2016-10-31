@@ -35,7 +35,7 @@ namespace CryptKeeper
                 }
                 finally
                 {
-                    Array.Clear(chars, 0, ((value.Length - 1) / 2) + 1);
+                    chars.ConstrainedClear();
                 }
 
                 this.secureValue.MakeReadOnly();

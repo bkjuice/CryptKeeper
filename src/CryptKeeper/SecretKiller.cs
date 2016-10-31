@@ -32,7 +32,7 @@ namespace CryptKeeper
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public static void ConstrainedClear(this byte[] data)
+        public static void ConstrainedClear(this Array data)
         {
             RuntimeHelpers.PrepareConstrainedRegions();
             try { } finally
