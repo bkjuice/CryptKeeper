@@ -129,16 +129,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IPartiallyReliableSecretFunc.cs" />
-    <Compile Include="IPartiallyReliableSecretAction.cs" />
-    <Compile Include="IPartiallyReliableSecretFuncOfT.cs" />
-    <Compile Include="IPartiallyReliableSecretActionOfT.cs" />
     <Compile Include="IReliableSecretFunc.cs" />
     <Compile Include="IReliableSecretFuncOfT.cs" />
     <Compile Include="IReliableSecretActionOfT.cs" />
     <Compile Include="IReliableSecretAction.cs" />
+    <Compile Include="IReliableSecretStringAction.cs" />
+    <Compile Include="IReliableSecretStringActionOfT.cs" />
+    <Compile Include="IReliableSecretStringFunc.cs" />
+    <Compile Include="IReliableSecretStringFuncOfT.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Secret.cs" />
+    <Compile Include="StringKiller.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

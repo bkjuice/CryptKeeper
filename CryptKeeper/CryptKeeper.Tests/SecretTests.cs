@@ -19,7 +19,7 @@ namespace CryptKeeper.Tests
         {
             var secret = new Secret(new byte[] { });
             secret.Dispose();
-            Action test = () => secret.Use(b => { });
+            Action test = () => secret.UseAsBytes(b => { });
             test.ShouldThrow<ObjectDisposedException>();
         }
 
@@ -37,7 +37,7 @@ namespace CryptKeeper.Tests
         {
             using (var secret = new Secret(new byte[] { }))
             {
-                secret.Use(b => true).Should().BeTrue();
+                secret.UseAsBytes(b => true).Should().BeTrue();
             }
         }
 
@@ -47,7 +47,7 @@ namespace CryptKeeper.Tests
             var state = new object();
             using (var secret = new Secret(new byte[] { }))
             {
-                secret.Use(state, (s, b) => { ReferenceEquals(s, state).Should().BeTrue(); });
+                secret.UseAsBytes(state, (s, b) => { ReferenceEquals(s, state).Should().BeTrue(); });
             }
         }
 
@@ -57,7 +57,7 @@ namespace CryptKeeper.Tests
             var state = new object();
             using (var secret = new Secret(new byte[] { }))
             {
-                secret.Use(state, (s, b) => ReferenceEquals(s, state)).Should().BeTrue();
+                secret.UseAsBytes(state, (s, b) => ReferenceEquals(s, state)).Should().BeTrue();
             }
         }
 
@@ -69,7 +69,7 @@ namespace CryptKeeper.Tests
             {
                 try
                 {
-                    secret.Use(b => { data = b; throw new InvalidOperationException(); });
+                    secret.UseAsBytes(b => { data = b; throw new InvalidOperationException(); });
                 }
                 catch (InvalidOperationException) { }
             }
@@ -83,7 +83,7 @@ namespace CryptKeeper.Tests
             using (var secret = new Secret(new byte[] { 1, 2, 3, 4, 5 }))
             {
                 byte[] data = null;
-                secret.Use(b => { data = b; });
+                secret.UseAsBytes(b => { data = b; });
                 data.Should().OnlyContain(b => b == 0);
             }
         }
@@ -91,7 +91,7 @@ namespace CryptKeeper.Tests
         [TestMethod]
         public void SecretThrowsArgumentNullExceptionWhenDataIsNull()
         {
-            Action test = () => new Secret(null);
+            Action test = () => new Secret(default(byte[]));
             test.ShouldThrow<ArgumentNullException>();
         }
         [TestMethod]
@@ -132,7 +132,7 @@ namespace CryptKeeper.Tests
             data.CopyTo(copy, 0);
             using (var secret = new Secret(data))
             {
-                secret.Use(b =>
+                secret.UseAsBytes(b =>
                 {
                     b.Should().ContainInOrder(copy);
                 });
