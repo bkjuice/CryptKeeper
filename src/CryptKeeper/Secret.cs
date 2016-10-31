@@ -256,8 +256,7 @@ namespace CryptKeeper
 
             var bytes = new byte[this.size];
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
-            finally
+            try { } finally
             {
                 IntPtr ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
                 Marshal.Copy(ptr, bytes, 0, this.size);
@@ -275,19 +274,25 @@ namespace CryptKeeper
                 return string.Empty;
             }
 
-            var chars = new char[this.size];
+            char[] chars = null;
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
+            try
+            {
+                chars = new char[this.size];
+                RuntimeHelpers.PrepareConstrainedRegions();
+                try { } finally
+                {
+                    IntPtr ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
+                    Marshal.Copy(ptr, chars, 0, this.size);
+                    Marshal.ZeroFreeCoTaskMemUnicode(ptr);
+                }
+
+                return new string(chars);
+            }
             finally
             {
-                IntPtr ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
-                Marshal.Copy(ptr, chars, 0, this.size);
-                Marshal.ZeroFreeCoTaskMemUnicode(ptr);
+                chars.ConstrainedClear();
             }
-
-            var clearValue = new string(chars);
-            Array.Clear(chars, 0, chars.Length);
-            return clearValue;
         }
 
         private void ThrowIfDisposed()
