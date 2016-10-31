@@ -5,6 +5,6 @@ namespace CryptKeeper
     public interface IReliableSecretAction<T>
     {
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        void Callback(T state, byte[] secret);
+        void Callback(T state, byte[] secret, bool secretIsValid);
     }
 }

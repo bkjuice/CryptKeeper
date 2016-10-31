@@ -20,20 +20,46 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(value != null);
             Contract.Requires<ArgumentOutOfRangeException>(value.Length < 2049, "The max supported secret size is 2KB (2048 bytes).");
 
-            this.size = value.Length;
-            var len = ((value.Length - 1) / 2) + 1;
-            var chars = new char[len];
-
+            RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                Buffer.BlockCopy(value, 0, chars, 0, value.Length);
-                unsafe { fixed (char* p = chars) this.secureValue = new SecureString(p, len); }
+                this.size = value.Length;
+                var len = ((value.Length - 1) / 2) + 1;
+                var chars = new char[len];
+
+                RuntimeHelpers.PrepareConstrainedRegions();
+                try
+                {
+                    Buffer.BlockCopy(value, 0, chars, 0, value.Length);
+                    unsafe { fixed (char* p = chars) this.secureValue = new SecureString(p, len); }
+                }
+                finally
+                {
+                    Array.Clear(chars, 0, ((value.Length - 1) / 2) + 1);
+                }
+
                 this.secureValue.MakeReadOnly();
             }
             finally
             {
                 Array.Clear(value, 0, value.Length);
-                Array.Clear(chars, 0, len);
+            }
+        }
+
+        public Secret(string value)
+        {
+            Contract.Requires<ArgumentNullException>(value != null);
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try
+            {
+                this.size = value.Length;
+                unsafe { fixed (char* p = value) this.secureValue = new SecureString(p, value.Length); }
+                this.secureValue.MakeReadOnly();
+            }
+            finally
+            {
+                value.Nullify();
             }
         }
 
@@ -46,22 +72,6 @@ namespace CryptKeeper
             if (!value.IsReadOnly())
             {
                 value.MakeReadOnly();
-            }
-        }
-
-        public Secret(string value)
-        {
-            Contract.Requires<ArgumentNullException>(value != null);
-
-            this.size = value.Length;
-            try
-            {
-                unsafe { fixed (char* p = value) this.secureValue = new SecureString(p, value.Length); }
-                this.secureValue.MakeReadOnly();
-            }
-            finally
-            {
-                value.Nullify();
             }
         }
 
@@ -98,14 +108,16 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectBytes();
+            byte[] value = null;
+            RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
+                value = this.UnprotectBytes();
                 callback(value);
             }
             finally
             {
-                Array.Clear(value, 0, value.Length);
+                value.ConstrainedClear();
             }
         }
 
@@ -114,14 +126,16 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = UnprotectBytes();
+            byte[] value = null;
+            RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
+                value = this.UnprotectBytes();
                 callback(state, value);
             }
             finally
             {
-                Array.Clear(value, 0, value.Length);
+                value.ConstrainedClear();
             }
         }
 
@@ -130,14 +144,16 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectBytes();
+            byte[] value = null;
+            RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
+                value = this.UnprotectBytes();
                 return callback(value);
             }
             finally
             {
-                Array.Clear(value, 0, value.Length);
+                value.ConstrainedClear();
             }
         }
 
@@ -146,14 +162,16 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectBytes();
+            byte[] value = null;
+            RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
+                value = this.UnprotectBytes();
                 return callback(state, value);
             }
             finally
             {
-                Array.Clear(value, 0, value.Length);
+                value.ConstrainedClear();
             }
         }
 
@@ -163,14 +181,16 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectBytes();
-
+            byte[] value = null;
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
+            try
+            {
+                value = this.UnprotectBytes();
+            }
             finally
             {
-                handler.Callback(value);
-                Array.Clear(value, 0, value.Length);
+                handler.Callback(value, value != null);
+                value.ConstrainedClear();
             }
         }
 
@@ -180,13 +200,16 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectBytes();
-
+            byte[] value = null;
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { } finally
+            try
             {
-                handler.Callback(state, value);
-                Array.Clear(value, 0, value.Length);
+                value = this.UnprotectBytes();
+            }
+            finally
+            {
+                handler.Callback(state, value, value != null);
+                value.ConstrainedClear();
             }
         }
 
@@ -196,14 +219,17 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectBytes();
-
+            byte[] value = null;
             TResult result;
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { } finally
+            try
             {
-                result = handler.Callback(value);
-                Array.Clear(value, 0, value.Length);
+                value = this.UnprotectBytes();
+            }
+            finally
+            {
+                result = handler.Callback(value, value != null);
+                value.ConstrainedClear();
             }
 
             return result;
@@ -215,14 +241,17 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectBytes();
-
+            byte[] value = null;
             TResult result;
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { } finally
+            try
             {
-                result = handler.Callback(state, value);
-                Array.Clear(value, 0, value.Length);
+                value = this.UnprotectBytes();
+            }
+            finally
+            {
+                result = handler.Callback(state, value, value != null);
+                value.ConstrainedClear();
             }
 
             return result;
@@ -233,9 +262,11 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectString();
+            string value = null;
+            RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
+                value = this.UnprotectString();
                 callback(value);
             }
             finally
@@ -249,9 +280,11 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectString();
+            string value = null;
+            RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
+                value = this.UnprotectString();
                 callback(state, value);
             }
             finally
@@ -265,9 +298,11 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectString();
+            string value = null;
+            RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
+                value = this.UnprotectString();
                 return callback(value);
             }
             finally
@@ -281,9 +316,11 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectString();
+            string value = null;
+            RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
+                value = this.UnprotectString();
                 return callback(state, value);
             }
             finally
@@ -298,12 +335,15 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectString();
-
+            string value = null;
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { } finally
+            try
             {
-                handler.Callback(value);
+                value = this.UnprotectString();
+            }
+            finally
+            {
+                handler.Callback(value, value != null);
                 value.Nullify();
             }
         }
@@ -314,12 +354,15 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectString();
-
+            string value = null;
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { } finally
+            try
             {
-                handler.Callback(state, value);
+                value = this.UnprotectString();
+            }
+            finally
+            {
+                handler.Callback(state, value, value != null);
                 value.Nullify();
             }
         }
@@ -330,13 +373,16 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectString();
-
             TResult result;
+            string value = null;
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { } finally
+            try
             {
-                result = handler.Callback(value);
+                value = this.UnprotectString();
+            }
+            finally
+            {
+                result = handler.Callback(value, value != null);
                 value.Nullify();
             }
 
@@ -349,19 +395,23 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(handler != null);
 
             this.ThrowIfDisposed();
-            var value = this.UnprotectString();
-
             TResult result;
+            string value = null;
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { } finally
+            try
             {
-                result = handler.Callback(state, value);
+                value = this.UnprotectString();
+            }
+            finally
+            {
+                result = handler.Callback(state, value, value != null);
                 value.Nullify();
             }
 
             return result;
         }
 
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private byte[] UnprotectBytes()
         {
             if (this.size == 0)
@@ -382,6 +432,7 @@ namespace CryptKeeper
             return bytes;
         }
 
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private string UnprotectString()
         {
             if (this.size == 0)

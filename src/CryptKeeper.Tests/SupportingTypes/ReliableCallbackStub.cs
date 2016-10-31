@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CryptKeeper.Tests.SupportingTypes
+﻿namespace CryptKeeper.Tests.SupportingTypes
 {
     internal class ReliableCallbackStub : 
         IReliableSecretAction, 
@@ -20,48 +14,48 @@ namespace CryptKeeper.Tests.SupportingTypes
 
         public string State { get; set; }
 
-        public void Callback(string secret)
+        public void Callback(string secret, bool secretIsValid)
         {
             this.Invoked = true;
         }
 
-        public void Callback(byte[] secret)
+        public void Callback(byte[] secret, bool secretIsValid)
         {
             this.Invoked = true;
         }
 
-        public void Callback(string state, string secret)
-        {
-            this.Invoked = true;
-            this.State = state;
-        }
-
-        public void Callback(string state, byte[] secret)
+        public void Callback(string state, string secret, bool secretIsValid)
         {
             this.Invoked = true;
             this.State = state;
         }
 
-        string IReliableSecretStringFunc<string>.Callback(string secret)
+        public void Callback(string state, byte[] secret, bool secretIsValid)
+        {
+            this.Invoked = true;
+            this.State = state;
+        }
+
+        string IReliableSecretStringFunc<string>.Callback(string secret, bool secretIsValid)
         {
             this.Invoked = true;
             return "Inconsequential Result";
         }
 
-        string IReliableSecretFunc<string>.Callback(byte[] secret)
+        string IReliableSecretFunc<string>.Callback(byte[] secret, bool secretIsValid)
         {
             this.Invoked = true;
             return "Inconsequential Result";
         }
 
-        string IReliableSecretStringFunc<string, string>.Callback(string state, string secret)
+        string IReliableSecretStringFunc<string, string>.Callback(string state, string secret, bool secretIsValid)
         {
             this.Invoked = true;
             this.State = state;
             return "Inconsequential Result";
         }
 
-        string IReliableSecretFunc<string, string>.Callback(string state, byte[] secret)
+        string IReliableSecretFunc<string, string>.Callback(string state, byte[] secret, bool secretIsValid)
         {
             this.Invoked = true;
             this.State = state;

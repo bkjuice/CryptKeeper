@@ -5,6 +5,6 @@ namespace CryptKeeper
     public interface IReliableSecretStringFunc<TResult>
     {
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        TResult Callback(string secret);
+        TResult Callback(string secret, bool secretIsValid);
     }
 }
