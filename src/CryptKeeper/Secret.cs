@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
 
@@ -246,7 +245,6 @@ namespace CryptKeeper
             }
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private byte[] UnprotectBytes()
         {
             if (this.size == 0)
@@ -255,18 +253,25 @@ namespace CryptKeeper
             }
 
             var bytes = new byte[this.size];
+            IntPtr ptr = IntPtr.Zero;
+
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { } finally
+            try
             {
-                IntPtr ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
+                ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
                 Marshal.Copy(ptr, bytes, 0, this.size);
-                Marshal.ZeroFreeCoTaskMemUnicode(ptr);
+            }
+            finally
+            {
+                if (ptr != IntPtr.Zero)
+                {
+                    Marshal.ZeroFreeCoTaskMemUnicode(ptr);
+                }
             }
 
             return bytes;
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private string UnprotectString()
         {
             if (this.size == 0)
@@ -274,17 +279,23 @@ namespace CryptKeeper
                 return string.Empty;
             }
 
-            char[] chars = null;
+            var chars = new char[this.size];
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                chars = new char[this.size];
+                IntPtr ptr = IntPtr.Zero;
                 RuntimeHelpers.PrepareConstrainedRegions();
-                try { } finally
+                try
                 {
-                    IntPtr ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
+                    ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
                     Marshal.Copy(ptr, chars, 0, this.size);
-                    Marshal.ZeroFreeCoTaskMemUnicode(ptr);
+                }
+                finally
+                {
+                    if (ptr != IntPtr.Zero)
+                    {
+                        Marshal.ZeroFreeCoTaskMemUnicode(ptr);
+                    }
                 }
 
                 return new string(chars);
