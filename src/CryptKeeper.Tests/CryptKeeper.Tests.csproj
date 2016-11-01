@@ -69,6 +69,7 @@
     <Compile Include="SecretTests.usage.Action.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SecretKillerTests.cs" />
+    <Compile Include="SecretTests.reliability.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
