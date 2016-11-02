@@ -10,23 +10,28 @@ namespace CryptKeeper
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public unsafe static void Nullify(this string value)
         {
+            GCHandle handle = default(GCHandle);
+            IntPtr ptr = IntPtr.Zero;
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
-            finally
+            try
             {
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var handle = GCHandle.Alloc(value, GCHandleType.Pinned);
-                    if (handle.IsAllocated)
+                    handle = GCHandle.Alloc(value, GCHandleType.Pinned);
+                    ptr = handle.AddrOfPinnedObject();
+                }
+            }
+            finally
+            {
+                if (handle.IsAllocated && ptr != IntPtr.Zero)
+                {
+                    var stringGuts = (char*)ptr;
+                    for (int index = 0; index < value.Length; index++)
                     {
-                        var innerChars = (char*)handle.AddrOfPinnedObject();
-                        for (int index = 0; index < value.Length; index++)
-                        {
-                            innerChars[index] = '\0';
-                        }
-
-                        handle.Free();
+                        stringGuts[index] = '\0';
                     }
+
+                    handle.Free();
                 }
             }
         }

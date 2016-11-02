@@ -25,6 +25,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,6 +34,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FluentAssertions, Version=4.16.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
@@ -75,6 +77,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CryptKeeper.ReliabilityProofs.Lib\CryptKeeper.ReliabilityProofs.Lib.csproj">
+      <Project>{3d3f5bec-b7f4-42eb-a83f-f03a449a5d0c}</Project>
+      <Name>CryptKeeper.ReliabilityProofs.Lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CryptKeeper\CryptKeeper.csproj">
       <Project>{75c22a3d-e719-4863-a406-1e3d5e3e33c2}</Project>
       <Name>CryptKeeper</Name>

@@ -170,10 +170,5 @@ namespace CryptKeeper.ReliabilityProofs
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
             void Callback();
         }
-
-        private unsafe struct TooBigForTheStack
-        {
-            public fixed byte Bytes[int.MaxValue];
-        }
     }
 }
