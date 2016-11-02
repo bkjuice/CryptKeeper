@@ -43,13 +43,11 @@ namespace CryptKeeper.ReliabilityProofs.Lib
              *      assigns the secret to an outer scope reference ("theValue")
              *      signals Thread A, then waits on its own wait handle 
              * Thread A is signaled and aborts thread B
-             * Catch ThreadAbortException { }
-             * Finally {signal thread B's wait handle to ensure no goofy re-ordering or deadlocking with CER}
+             * Catch ThreadAbortException {signal thread B's wait handle to ensure no goofy re-ordering or deadlocking with CER}
              * Assert "theValue" is properly destroyed
              */
 
             var parentNotify = new ManualResetEvent(false);
-            var childNotify = new ManualResetEvent(false);
             var parentContinue = new ManualResetEvent(false);
             var t = new Thread(() => 
             {
@@ -58,7 +56,7 @@ namespace CryptKeeper.ReliabilityProofs.Lib
                     try
                     {
                         parentNotify.Set();
-                        childNotify.WaitOne();
+                        new ManualResetEvent(false).WaitOne();
                     }
                     catch (ThreadAbortException)
                     {
