@@ -50,19 +50,28 @@ namespace CryptKeeper.ReliabilityProofs.Lib
 
             var parentNotify = new ManualResetEvent(false);
             var childNotify = new ManualResetEvent(false);
-
+            var parentContinue = new ManualResetEvent(false);
             var t = new Thread(() => 
             {
                 test(() =>
                 {
-                    parentNotify.Set();
-                    childNotify.WaitOne();
+                    try
+                    {
+                        parentNotify.Set();
+                        childNotify.WaitOne();
+                    }
+                    catch (ThreadAbortException)
+                    {
+                        parentContinue.Set();
+                        throw;
+                    }
                 });
             });
 
             t.Start();
             parentNotify.WaitOne();
             t.Abort();
+            parentContinue.WaitOne();
         }
     }
 }

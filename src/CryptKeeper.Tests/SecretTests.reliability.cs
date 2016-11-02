@@ -1,8 +1,7 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using FluentAssertions;
-using System.Threading;
 using CryptKeeper.ReliabilityProofs.Lib;
+using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CryptKeeper.Tests
 {
@@ -14,12 +13,12 @@ namespace CryptKeeper.Tests
             var clearValue = default(byte[]);
             using (var s = new Secret(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 }))
             {
-                Action<Action> test = stackOverflow =>
+                Action<Action> test = testCer =>
                 {
                     s.UseAsBytes(b =>
                     {
                         clearValue = b;
-                        stackOverflow();
+                        testCer();
                     });
                 };
 
@@ -35,12 +34,12 @@ namespace CryptKeeper.Tests
             var clearValue = default(byte[]);
             using (var s = new Secret("a string that shall never be spoken"))
             {
-                Action<Action> test = threadAbort =>
+                Action<Action> test = testCer =>
                 {
                     s.UseAsBytes(b =>
                     {
                         clearValue = b;
-                        threadAbort();
+                        testCer();
                     });
                 };
 
@@ -54,12 +53,12 @@ namespace CryptKeeper.Tests
             var clearValue = default(string);
             using (var s = new Secret("a string that shall never be spoken"))
             {
-                Action<Action> test = stackOverflow =>
+                Action<Action> test = testCer =>
                 {
                     s.UseAsString(c =>
                     {
                         clearValue = c;
-                        stackOverflow();
+                        testCer();
                     });
                 };
 
@@ -75,12 +74,12 @@ namespace CryptKeeper.Tests
             var clearValue = default(string);
             using (var s = new Secret("a string that shall never be spoken"))
             {
-                Action<Action> test = threadAbort =>
+                Action<Action> test = testCer =>
                 {
                     s.UseAsString(c =>
                     {
                         clearValue = c;
-                        threadAbort();
+                        testCer();
                     });
                 };
 
