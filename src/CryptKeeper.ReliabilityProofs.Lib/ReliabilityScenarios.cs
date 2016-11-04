@@ -59,8 +59,8 @@ namespace CryptKeeper.ReliabilityProofs.Lib
                         new ManualResetEvent(false).WaitOne();
                     }
                     // TODO: The commented out pattern below causes a race condition and an 
-                    // intermittent test failure. This needs investigation...CER executes, but after
-                    // assertion.
+                    // intermittent test failure. This needs investigation...(assuming) the CER executes,
+                    // but after assertion, so the test is red.
                     //catch (ThreadAbortException)
                     //{
                     //    parentContinue.Set();

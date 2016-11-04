@@ -65,6 +65,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="SecretTests.lifecycle.cs" />
+    <Compile Include="SecretTests.reliability.FuncOfT.cs" />
+    <Compile Include="SecretTests.reliability.Func.cs" />
     <Compile Include="SecretTests.reliability.ActionOfT.cs" />
     <Compile Include="SecretTests.usage.FuncOfT.cs" />
     <Compile Include="SecretTests.usage.Func.cs" />
