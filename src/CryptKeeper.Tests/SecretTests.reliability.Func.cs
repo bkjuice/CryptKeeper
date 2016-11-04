@@ -47,6 +47,8 @@ namespace CryptKeeper.Tests
 
                 test.AbortTheThread();
             }
+
+            clearValue.Should().OnlyContain(b => b == 0);
         }
 
         [TestMethod]

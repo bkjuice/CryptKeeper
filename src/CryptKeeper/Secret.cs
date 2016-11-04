@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading;
@@ -114,6 +115,11 @@ namespace CryptKeeper
                 value = this.UnprotectBytes();
                 callback(value);
             }
+            catch
+            {
+                value.ConstrainedClear();
+                throw;
+            }
             finally
             {
                 value.ConstrainedClear();
@@ -131,6 +137,11 @@ namespace CryptKeeper
             {
                 value = this.UnprotectBytes();
                 callback(state, value);
+            }
+            catch
+            {
+                value.ConstrainedClear();
+                throw;
             }
             finally
             {
@@ -150,6 +161,11 @@ namespace CryptKeeper
                 value = this.UnprotectBytes();
                 return callback(value);
             }
+            catch
+            {
+                value.ConstrainedClear();
+                throw;
+            }
             finally
             {
                 value.ConstrainedClear();
@@ -168,6 +184,11 @@ namespace CryptKeeper
                 value = this.UnprotectBytes();
                 return callback(state, value);
             }
+            catch
+            {
+                value.ConstrainedClear();
+                throw;
+            }
             finally
             {
                 value.ConstrainedClear();
@@ -179,74 +200,90 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            string value = null;
-            GCHandle handle = default(GCHandle);
+            InternalStringHandle handle = default(InternalStringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                value = this.UnprotectString(out handle);
-                callback(value);
+                handle = this.UnprotectString();
+                callback(handle.Value);
+            }
+            catch
+            {
+                handle.Nullify();
+                throw;
             }
             finally
             {
-                handle.Nullify(value?.Length);
+                handle.Nullify();
             }
         }
 
         public void UseAsString<T>(T state, Action<T, string> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
-
             this.ThrowIfDisposed();
-            string value = null;
-            GCHandle handle = default(GCHandle);
+
+            InternalStringHandle handle = default(InternalStringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                value = this.UnprotectString(out handle);
-                callback(state, value);
+                handle = this.UnprotectString();
+                callback(state, handle.Value);
+            }
+            catch
+            {
+                handle.Nullify();
+                throw;
             }
             finally
             {
-                handle.Nullify(value?.Length);
+                handle.Nullify();
             }
         }
 
         public TResult UseAsString<TResult>(Func<string, TResult> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
-
             this.ThrowIfDisposed();
-            string value = null;
-            GCHandle handle = default(GCHandle);
+
+            InternalStringHandle handle = default(InternalStringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                value = this.UnprotectString(out handle);
-                return callback(value);
+                handle = this.UnprotectString();
+                return callback(handle.Value);
+            }
+            catch
+            {
+                handle.Nullify();
+                throw;
             }
             finally
             {
-                handle.Nullify(value?.Length);
+                handle.Nullify();
             }
         }
 
         public TResult UseAsString<T, TResult>(T state, Func<T, string, TResult> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
-
             this.ThrowIfDisposed();
-            string value = null;
-            GCHandle handle = default(GCHandle);
+
+            InternalStringHandle handle = default(InternalStringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                value = this.UnprotectString(out handle);
-                return callback(state, value);
+                handle = this.UnprotectString();
+                return callback(state, handle.Value);
+            }
+            catch
+            {
+                handle.Nullify();
+                throw;
             }
             finally
             {
-                handle.Nullify(value?.Length);
+                handle.Nullify();
             }
         }
 
@@ -257,6 +294,7 @@ namespace CryptKeeper
                 return new byte[0];
             }
 
+            // TODO: GC can copy this array...must stackalloc (?) or pin (probably in this case).
             var bytes = new byte[this.size];
             IntPtr ptr = IntPtr.Zero;
 
@@ -277,41 +315,34 @@ namespace CryptKeeper
             return bytes;
         }
 
-        private string UnprotectString(out GCHandle pinnedHandle)
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        private unsafe InternalStringHandle UnprotectString()
         {
             if (this.size == 0)
             {
-                pinnedHandle = default(GCHandle);
-                return string.Empty;
+                return new InternalStringHandle();
             }
 
-            var chars = new char[this.size];
+            var handle = new InternalStringHandle(this.size);
+            IntPtr ptr = IntPtr.Zero;
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                IntPtr ptr = IntPtr.Zero;
-                RuntimeHelpers.PrepareConstrainedRegions();
-                try
+                ptr = Marshal.SecureStringToBSTR(this.secureValue);
+                for(int i = 0; i < this.size; ++i)
                 {
-                    ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
-                    Marshal.Copy(ptr, chars, 0, this.size);
+                    handle.P[i] = ((char*)ptr)[i]; 
                 }
-                finally
-                {
-                    if (ptr != IntPtr.Zero)
-                    {
-                        Marshal.ZeroFreeCoTaskMemUnicode(ptr);
-                    }
-                }
-
-                Thread.MemoryBarrier();
-                pinnedHandle = GCHandle.Alloc(new string(chars), GCHandleType.Pinned);
-                return pinnedHandle.Target as string;
             }
             finally
             {
-                chars.ConstrainedClear();
+                if (ptr != IntPtr.Zero)
+                {
+                    Marshal.ZeroFreeBSTR(ptr);
+                }
             }
+
+            return handle;
         }
 
         private void ThrowIfDisposed()

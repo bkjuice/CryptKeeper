@@ -23,29 +23,15 @@ namespace CryptKeeper
             }
             finally
             {
-                handle.Nullify(value?.Length);
-            }
-        }
-
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        internal unsafe static void Nullify(this GCHandle handle, int? length)
-        {
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try { } finally
-            {
-                if (handle.IsAllocated)
+                if (handle.IsAllocated && ptr != IntPtr.Zero)
                 {
-                    IntPtr ptr = handle.AddrOfPinnedObject();
-                    if (ptr != IntPtr.Zero)
+                    var stringGuts = (char*)ptr;
+                    for (int index = 0; index < value.Length; index++)
                     {
-                        var stringGuts = (char*)ptr;
-                        for (int index = 0; index < length; index++)
-                        {
-                            stringGuts[index] = '\0';
-                        }
-
-                        handle.Free();
+                        stringGuts[index] = '\0';
                     }
+
+                    handle.Free();
                 }
             }
         }
