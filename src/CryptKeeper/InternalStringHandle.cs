@@ -1,10 +1,11 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 
 namespace CryptKeeper
 {
-    internal unsafe struct InternalStringHandle
+    internal unsafe class InternalStringHandle : SafeHandle
     {
         public readonly GCHandle Pin;
 
@@ -12,9 +13,17 @@ namespace CryptKeeper
 
         private readonly int length;
 
-        public InternalStringHandle(int length) : this()
+        internal InternalStringHandle(int length) : base(IntPtr.Zero, true)
         {
-            this.Pin = GCHandle.Alloc(new string('\0', length), GCHandleType.Pinned);
+            if (length < 1) return;
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { }
+            finally
+            {
+                this.Pin = GCHandle.Alloc(new string('\0', length), GCHandleType.Pinned);
+            }
+
             this.P = (char*)Pin.AddrOfPinnedObject();
             this.length = length;
         }
@@ -32,6 +41,14 @@ namespace CryptKeeper
             }
         }
 
+        public override bool IsInvalid
+        {
+            get
+            {
+                return !Pin.IsAllocated;
+            }
+        }
+
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void Nullify()
         {
@@ -39,7 +56,7 @@ namespace CryptKeeper
             try { }
             finally
             {
-                if (Pin.IsAllocated)
+                if (this.length > 0 && Pin.IsAllocated)
                 {
                     for (int index = 0; index < length; index++)
                     {
@@ -49,6 +66,13 @@ namespace CryptKeeper
                     Pin.Free();
                 }
             }
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        protected override bool ReleaseHandle()
+        {
+            this.Nullify();
+            return true;
         }
     }
 }

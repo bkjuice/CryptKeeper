@@ -4,12 +4,13 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Threading;
 
 namespace CryptKeeper
 {
     public sealed class Secret : IDisposable
     {
+        private static readonly InternalStringHandle EmptyHandle = new InternalStringHandle(0);
+
         private readonly SecureString secureValue;
 
         private readonly int size;
@@ -56,6 +57,11 @@ namespace CryptKeeper
                 this.size = value.Length;
                 unsafe { fixed (char* p = value) this.secureValue = new SecureString(p, value.Length); }
                 this.secureValue.MakeReadOnly();
+            }
+            catch
+            {
+                value.Nullify();
+                throw;
             }
             finally
             {
@@ -320,7 +326,7 @@ namespace CryptKeeper
         {
             if (this.size == 0)
             {
-                return new InternalStringHandle();
+                return EmptyHandle;
             }
 
             var handle = new InternalStringHandle(this.size);
@@ -328,7 +334,13 @@ namespace CryptKeeper
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                ptr = Marshal.SecureStringToBSTR(this.secureValue);
+                RuntimeHelpers.PrepareConstrainedRegions();
+                try { }
+                finally
+                {
+                    ptr = Marshal.SecureStringToBSTR(this.secureValue);
+                }
+
                 for(int i = 0; i < this.size; ++i)
                 {
                     handle.P[i] = ((char*)ptr)[i]; 
