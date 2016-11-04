@@ -13,7 +13,7 @@ namespace CryptKeeper
 
         private readonly int length;
 
-        internal InternalStringHandle(int length) : base(IntPtr.Zero, true)
+        public InternalStringHandle(int length) : base(IntPtr.Zero, true)
         {
             if (length < 1) return;
 
