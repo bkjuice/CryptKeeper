@@ -3,6 +3,7 @@ using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Threading;
 
 namespace CryptKeeper
 {
@@ -176,18 +177,19 @@ namespace CryptKeeper
         public void UseAsString(Action<string> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
-
             this.ThrowIfDisposed();
+
             string value = null;
+            GCHandle handle = default(GCHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                value = this.UnprotectString();
+                value = this.UnprotectString(out handle);
                 callback(value);
             }
             finally
             {
-                value.Nullify();
+                handle.Nullify(value?.Length);
             }
         }
 
@@ -197,15 +199,16 @@ namespace CryptKeeper
 
             this.ThrowIfDisposed();
             string value = null;
+            GCHandle handle = default(GCHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                value = this.UnprotectString();
+                value = this.UnprotectString(out handle);
                 callback(state, value);
             }
             finally
             {
-                value.Nullify();
+                handle.Nullify(value?.Length);
             }
         }
 
@@ -215,15 +218,16 @@ namespace CryptKeeper
 
             this.ThrowIfDisposed();
             string value = null;
+            GCHandle handle = default(GCHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                value = this.UnprotectString();
+                value = this.UnprotectString(out handle);
                 return callback(value);
             }
             finally
             {
-                value.Nullify();
+                handle.Nullify(value?.Length);
             }
         }
 
@@ -233,15 +237,16 @@ namespace CryptKeeper
 
             this.ThrowIfDisposed();
             string value = null;
+            GCHandle handle = default(GCHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                value = this.UnprotectString();
+                value = this.UnprotectString(out handle);
                 return callback(state, value);
             }
             finally
             {
-                value.Nullify();
+                handle.Nullify(value?.Length);
             }
         }
 
@@ -272,10 +277,11 @@ namespace CryptKeeper
             return bytes;
         }
 
-        private string UnprotectString()
+        private string UnprotectString(out GCHandle pinnedHandle)
         {
             if (this.size == 0)
             {
+                pinnedHandle = default(GCHandle);
                 return string.Empty;
             }
 
@@ -298,7 +304,9 @@ namespace CryptKeeper
                     }
                 }
 
-                return new string(chars);
+                Thread.MemoryBarrier();
+                pinnedHandle = GCHandle.Alloc(new string(chars), GCHandleType.Pinned);
+                return pinnedHandle.Target as string;
             }
             finally
             {

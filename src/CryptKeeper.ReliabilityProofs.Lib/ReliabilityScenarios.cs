@@ -58,10 +58,17 @@ namespace CryptKeeper.ReliabilityProofs.Lib
                         parentNotify.Set();
                         new ManualResetEvent(false).WaitOne();
                     }
-                    catch (ThreadAbortException)
+                    // TODO: The commented out pattern below causes a race condition and an 
+                    // intermittent test failure. This needs investigation...CER executes, but after
+                    // assertion.
+                    //catch (ThreadAbortException)
+                    //{
+                    //    parentContinue.Set();
+                    //    throw;
+                    //}
+                    finally
                     {
                         parentContinue.Set();
-                        throw;
                     }
                 });
             });

@@ -65,13 +65,14 @@
   </Choose>
   <ItemGroup>
     <Compile Include="SecretTests.lifecycle.cs" />
+    <Compile Include="SecretTests.reliability.ActionOfT.cs" />
     <Compile Include="SecretTests.usage.FuncOfT.cs" />
     <Compile Include="SecretTests.usage.Func.cs" />
     <Compile Include="SecretTests.usage.ActionOfT.cs" />
     <Compile Include="SecretTests.usage.Action.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SecretKillerTests.cs" />
-    <Compile Include="SecretTests.reliability.cs" />
+    <Compile Include="SecretTests.reliability.Action.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
