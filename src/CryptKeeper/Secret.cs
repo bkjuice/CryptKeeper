@@ -397,6 +397,7 @@ namespace CryptKeeper
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         private unsafe InternalByteHandle UnprotectBytes()
         {
             if (this.size == 0)
@@ -434,6 +435,7 @@ namespace CryptKeeper
             return handle;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private unsafe InternalStringHandle UnprotectString()
         {

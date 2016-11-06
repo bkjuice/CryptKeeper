@@ -1,0 +1,19 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>CryptKeeper</id>
+    <version>$version$</version>
+    <title>CryptKeeper</title>
+    <authors>Bruce Krakower</authors>
+    <owners>Bruce Krakower</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>CryptKeeper is a wrapper over the .NET BCL crypto APIs to encourage correct and secure usage.</summary>
+    <description>
+      This -alpha exposes the ability to use SecureString with reliably destroyed clear text. More to come. Slow burn and lots of testing.
+    </description>
+    <copyright>Copyright © 2016</copyright>
+    <licenseUrl>https://github.com/bkjuice/CryptKeeper/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/bkjuice/CryptKeeper</projectUrl>
+    <tags>SecureString Crypto Secret</tags>
+  </metadata>
+</package>

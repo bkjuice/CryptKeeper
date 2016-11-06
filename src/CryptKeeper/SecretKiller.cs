@@ -25,6 +25,8 @@ namespace CryptKeeper
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public unsafe static void Nullify(this string value)
         {
+            if (string.IsNullOrEmpty(value)) return;
+
             GCHandle handle = default(GCHandle);
             IntPtr ptr = IntPtr.Zero;
             RuntimeHelpers.PrepareConstrainedRegions();

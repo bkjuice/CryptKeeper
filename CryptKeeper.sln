@@ -17,24 +17,33 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Static Analysis|Any CPU = Static Analysis|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{75C22A3D-E719-4863-A406-1E3D5E3E33C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{75C22A3D-E719-4863-A406-1E3D5E3E33C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75C22A3D-E719-4863-A406-1E3D5E3E33C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75C22A3D-E719-4863-A406-1E3D5E3E33C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75C22A3D-E719-4863-A406-1E3D5E3E33C2}.Static Analysis|Any CPU.ActiveCfg = Static Analysis|Any CPU
+		{75C22A3D-E719-4863-A406-1E3D5E3E33C2}.Static Analysis|Any CPU.Build.0 = Static Analysis|Any CPU
 		{AC75265F-3CE0-4A33-BB52-47B9B0012310}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AC75265F-3CE0-4A33-BB52-47B9B0012310}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC75265F-3CE0-4A33-BB52-47B9B0012310}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC75265F-3CE0-4A33-BB52-47B9B0012310}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC75265F-3CE0-4A33-BB52-47B9B0012310}.Static Analysis|Any CPU.ActiveCfg = Static Analysis|Any CPU
+		{AC75265F-3CE0-4A33-BB52-47B9B0012310}.Static Analysis|Any CPU.Build.0 = Static Analysis|Any CPU
 		{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}.Static Analysis|Any CPU.ActiveCfg = Static Analysis|Any CPU
+		{3D3F5BEC-B7F4-42EB-A83F-F03A449A5D0C}.Static Analysis|Any CPU.Build.0 = Static Analysis|Any CPU
 		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Static Analysis|Any CPU.ActiveCfg = Static Analysis|Any CPU
+		{D7286B4F-EBC8-4863-85ED-9BE1838A6052}.Static Analysis|Any CPU.Build.0 = Static Analysis|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

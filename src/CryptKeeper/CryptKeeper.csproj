@@ -74,12 +74,13 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <BuildPackage>true</BuildPackage>
     <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
     <CodeContractsRuntimeOnlyPublicSurface>True</CodeContractsRuntimeOnlyPublicSurface>
     <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
     <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
     <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
-    <CodeContractsRunCodeAnalysis>True</CodeContractsRunCodeAnalysis>
+    <CodeContractsRunCodeAnalysis>False</CodeContractsRunCodeAnalysis>
     <CodeContractsNonNullObligations>True</CodeContractsNonNullObligations>
     <CodeContractsBoundsObligations>True</CodeContractsBoundsObligations>
     <CodeContractsArithmeticObligations>True</CodeContractsArithmeticObligations>
@@ -114,13 +115,26 @@
     <CodeContractsSkipAnalysisIfCannotConnectToCache>False</CodeContractsSkipAnalysisIfCannotConnectToCache>
     <CodeContractsFailBuildOnWarnings>False</CodeContractsFailBuildOnWarnings>
     <CodeContractsBeingOptimisticOnExternal>True</CodeContractsBeingOptimisticOnExternal>
-    <CodeContractsRuntimeCheckingLevel>Pre and Post</CodeContractsRuntimeCheckingLevel>
+    <CodeContractsRuntimeCheckingLevel>Preconditions</CodeContractsRuntimeCheckingLevel>
     <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
     <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Release\CryptKeeper.XML</DocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Static Analysis|AnyCPU'">
+    <OutputPath>bin\Static Analysis\</OutputPath>
+    <DefineConstants>CODE_ANALYSIS;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\Release\CryptKeeper.XML</DocumentationFile>
+    <Optimize>true</Optimize>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -140,12 +154,37 @@
     <Compile Include="Secret.cs" />
     <Compile Include="SecretKiller.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="CryptKeeper.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="CleanPackageOutputs" BeforeTargets="BuildPackage">
+    <Message Text="Cleaning build output packages..." />
+    <ItemGroup>
+      <PackageOutputsToClean Include="$(TargetDir)*.nupkg" />
+    </ItemGroup>
+    <Delete Files="@(PackageOutputsToClean)" ContinueOnError="True" />
   </Target>
-  <Target Name="AfterBuild">
+  <Target Name="CleanStagedPackages" BeforeTargets="BuildPackage">
+    <Message Text="Cleaning staged packages..." />
+    <ItemGroup>
+      <PackagesToClean Include="$(SolutionDir)packageStaging\$(ProjectName)*.nupkg" />
+    </ItemGroup>
+    <Delete Files="@(PackagesToClean)" ContinueOnError="true" />
   </Target>
-  -->
+  <Target Name="StagePackages" AfterTargets="BuildPackage">
+    <Message Text="Cleaning staged packages..." />
+    <ItemGroup>
+      <PackagesBuilt Include="$(TargetDir)*.nupkg" />
+      <PackagesToClean Include="$(SolutionDir)packageStaging\$(ProjectName)*.nupkg" />
+    </ItemGroup>
+    <Delete Files="@(PackagesToClean)" ContinueOnError="true" />
+    <Copy ContinueOnError="true" SourceFiles="@(PackagesBuilt)" DestinationFiles="@(PackagesBuilt->'$(SolutionDir)packageStaging\%(Filename)%(Extension)')" />
+  </Target>
+  <!--<Import Project="..\..\packages\MsBuild.NuGet.Pack.2.0.0\tools\MsBuild.NuGet.Pack.targets" Condition="Exists('..\..\packages\MsBuild.NuGet.Pack.2.0.0\tools\MsBuild.NuGet.Pack.targets')" />
+  <Target Name="EnsureMsBuildNuGetPackImported" BeforeTargets="BeforeBuild" Condition="'$(MsBuildNuGetPackImported)' == ''">
+    <Error Condition="!Exists('..\..\packages\MsBuild.NuGet.Pack.2.0.0\tools\MsBuild.NuGet.Pack.targets') And ('$(RunNuGetPack)' != '' And $(RunNuGetPack))" Text="You are trying to build with MsBuild.NuGet.Pack, but the MsBuild.NuGet.Pack.targets file is not available on this computer. This is probably because the MsBuild.NuGet.Pack package has not been committed to source control, or NuGet Package Restore is not enabled. Please enable NuGet Package Restore to download them. For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
+    <Error Condition="Exists('..\..\packages\MsBuild.NuGet.Pack.2.0.0\tools\MsBuild.NuGet.Pack.targets') And ('$(RunNuGetPack)' != '' And $(RunNuGetPack))" Text="MsBuild.NuGet.Pack cannot be run because NuGet packages were restored prior to the build running, and the targets file was unavailable when the build started. Please build the project again to include these packages in the build. You may also need to make sure that your build server does not delete packages prior to each build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
+  </Target>-->
 </Project>
