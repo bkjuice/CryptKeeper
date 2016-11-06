@@ -5,38 +5,40 @@ using System.Runtime.InteropServices;
 
 namespace CryptKeeper
 {
-    internal unsafe class InternalStringHandle : SafeHandle
+    internal unsafe class InternalByteHandle : SafeHandle
     {
         public readonly GCHandle Pin;
 
-        public readonly char* P;
+        public readonly byte* P;
+
+        private static readonly byte[] Empty = new byte[0];
 
         private readonly int length;
 
-        public InternalStringHandle(int length) : base(IntPtr.Zero, true)
+        public InternalByteHandle(int length) : base(IntPtr.Zero, true)
         {
             if (length < 1) return;
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try { } finally
             {
-                this.Pin = GCHandle.Alloc(new string('\0', length), GCHandleType.Pinned);
+                this.Pin = GCHandle.Alloc(new byte[length], GCHandleType.Pinned);
             }
 
-            this.P = (char*)Pin.AddrOfPinnedObject();
+            this.P = (byte*)Pin.AddrOfPinnedObject();
             this.length = length;
         }
 
-        public string Value
+        public byte[] Value
         {
             get
             {
                 if (Pin.IsAllocated)
                 {
-                    return Pin.Target as string;
+                    return Pin.Target as byte[];
                 }
 
-                return string.Empty;
+                return Empty;
             }
         }
 
@@ -52,14 +54,13 @@ namespace CryptKeeper
         public void Nullify()
         {
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
-            finally
+            try { } finally
             {
                 if (this.length > 0 && Pin.IsAllocated)
                 {
                     for (int i = 0; i < length; i++)
                     {
-                        P[i] = '\0';
+                        P[i] = 0;
                     }
 
                     Pin.Free();

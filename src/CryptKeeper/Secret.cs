@@ -7,9 +7,16 @@ using System.Security;
 
 namespace CryptKeeper
 {
+    /// <summary>
+    /// Container class used to store and access values as a <see cref="SecureString"/> and reliably 
+    /// destroy the clear text information after use.
+    /// </summary>
+    /// <seealso cref="System.IDisposable" />
     public sealed class Secret : IDisposable
     {
-        private static readonly InternalStringHandle EmptyHandle = new InternalStringHandle(0);
+        private static readonly InternalStringHandle EmptyStringHandle = new InternalStringHandle(0);
+
+        private static readonly InternalByteHandle EmptyBytesHandle = new InternalByteHandle(0);
 
         private readonly SecureString secureValue;
 
@@ -17,6 +24,15 @@ namespace CryptKeeper
 
         private bool disposed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Secret"/> class to protect binary data.
+        /// </summary>
+        /// <param name="value">The clear value to protect, which will be destroyed once protected.</param>
+        /// <remarks>
+        /// Be aware that if the provided value is not pinned on initialization, the garbage collector
+        /// can leave behind copies of this value. Prefer to initialize the <see cref="Secret"/> instance
+        /// with a <see cref="SecureString"/>.
+        /// </remarks>
         public Secret(byte[] value)
         {
             Contract.Requires<ArgumentNullException>(value != null);
@@ -36,6 +52,11 @@ namespace CryptKeeper
                     unsafe { fixed (char* p = chars) this.secureValue = new SecureString(p, len); }
                     this.secureValue.MakeReadOnly();
                 }
+                catch
+                {
+                    chars.ConstrainedClear();
+                    throw;
+                }
                 finally
                 {
                     chars.ConstrainedClear();
@@ -47,6 +68,15 @@ namespace CryptKeeper
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Secret"/> class to protect string data.
+        /// </summary>
+        /// <param name="value">The clear value to protect, which will be destroyed once protected.</param>
+        /// <remarks>
+        /// Be aware that if the provided value is not pinned on initialization, the garbage collector
+        /// can leave behind copies of this value. Prefer to initialize the <see cref="Secret"/> instance
+        /// with a <see cref="SecureString"/>.
+        /// </remarks>
         public Secret(string value)
         {
             Contract.Requires<ArgumentNullException>(value != null);
@@ -69,6 +99,10 @@ namespace CryptKeeper
             }
         }
 
+        /// <summary>
+        /// (Preferred) Initializes a new instance of the <see cref="Secret"/> class.
+        /// </summary>
+        /// <param name="value">The value as a <see cref="SecureString"/> instance.</param>
         public Secret(SecureString value)
         {
             Contract.Requires<ArgumentNullException>(value != null);
@@ -81,6 +115,9 @@ namespace CryptKeeper
             }
         }
 
+        /// <summary>
+        /// Gets the underlying secure string instance.
+        /// </summary>
         public SecureString SecureValue
         {
             get
@@ -90,6 +127,12 @@ namespace CryptKeeper
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is disposed.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is disposed; otherwise, <c>false</c>.
+        /// </value>
         public bool IsDisposed
         {
             get
@@ -98,6 +141,9 @@ namespace CryptKeeper
             }
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             if (!this.disposed)
@@ -109,104 +155,136 @@ namespace CryptKeeper
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Allows for use of the protected secret as a byte array and reliably destroys the secret after use.
+        /// </summary>
+        /// <param name="callback">The callback to invoke with the unprotected secret as a byte array.</param>
         public void UseAsBytes(Action<byte[]> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
-
             this.ThrowIfDisposed();
-            byte[] value = null;
+
+            var handle = default(InternalByteHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                value = this.UnprotectBytes();
-                callback(value);
+                handle = this.UnprotectBytes();
+                callback(handle.Value);
             }
             catch
             {
-                value.ConstrainedClear();
+                handle.Nullify();
                 throw;
             }
             finally
             {
-                value.ConstrainedClear();
+                handle.Nullify();
             }
         }
 
+        /// <summary>
+        /// Allows for use of the protected secret as a byte array and reliably destroys the secret after use. Use this overload to pass
+        /// additional state to the callback and avoid closures for hot path code.
+        /// </summary>
+        /// <typeparam name="T">The type of state that will be passed to the provided callback.</typeparam>
+        /// <param name="state">The state to be passed to the provided callback.</param>
+        /// <param name="callback">The callback to invoke with the unprotected secret as a byte array.</param>
         public void UseAsBytes<T>(T state, Action<T, byte[]> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
-
             this.ThrowIfDisposed();
-            byte[] value = null;
+
+            var handle = default(InternalByteHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                value = this.UnprotectBytes();
-                callback(state, value);
+                handle = this.UnprotectBytes();
+                callback(state, handle.Value);
             }
             catch
             {
-                value.ConstrainedClear();
+                handle.Nullify();
                 throw;
             }
             finally
             {
-                value.ConstrainedClear();
+                handle.Nullify();
             }
         }
 
+        /// <summary>
+        /// Allows for use of the protected secret as a byte array and reliably destroys the secret after use.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="callback">The callback to invoke with the unprotected secret as a byte array.</param>
+        /// <returns>The callback result.</returns>
         public TResult UseAsBytes<TResult>(Func<byte[], TResult> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
-
             this.ThrowIfDisposed();
-            byte[] value = null;
+
+            var handle = default(InternalByteHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                value = this.UnprotectBytes();
-                return callback(value);
+                handle = this.UnprotectBytes();
+                return callback(handle.Value);
             }
             catch
             {
-                value.ConstrainedClear();
+                handle.Nullify();
                 throw;
             }
             finally
             {
-                value.ConstrainedClear();
+                handle.Nullify();
             }
         }
 
+        /// <summary>
+        /// Allows for use of the protected secret as a byte array and reliably destroys the secret after use. Use this overload to pass
+        /// additional state to the callback and avoid closures for hot path code.
+        /// </summary>
+        /// <typeparam name="T">The type of state that will be passed to the provided callback.</typeparam>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="state">The state to be passed to the provided callback.</param>
+        /// <param name="callback">The callback to invoke with the unprotected secret as a byte array.</param>
+        /// <returns>
+        /// The callback result.
+        /// </returns>
         public TResult UseAsBytes<T, TResult>(T state, Func<T, byte[], TResult> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
-
             this.ThrowIfDisposed();
-            byte[] value = null;
+
+            var handle = default(InternalByteHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                value = this.UnprotectBytes();
-                return callback(state, value);
+                handle = this.UnprotectBytes();
+                return callback(state, handle.Value);
             }
             catch
             {
-                value.ConstrainedClear();
+                handle.Nullify();
                 throw;
             }
             finally
             {
-                value.ConstrainedClear();
+                handle.Nullify();
             }
         }
 
+        /// <summary>
+        /// Allows for use of the protected secret as a string and reliably destroys the secret after use.
+        /// </summary>
+        /// <param name="callback">The callback to invoke with the unprotected secret as a string.</param>
         public void UseAsString(Action<string> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            InternalStringHandle handle = default(InternalStringHandle);
+            var handle = default(InternalStringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -224,6 +302,13 @@ namespace CryptKeeper
             }
         }
 
+        /// <summary>
+        /// Allows for use of the protected secret as a string and reliably destroys the secret after use. Use this overload to pass
+        /// additional state to the callback and avoid closures for hot path code.
+        /// </summary>
+        /// <typeparam name="T">The type of state that will be passed to the provided callback.</typeparam>
+        /// <param name="state">The state to be passed to the provided callback.</param>
+        /// <param name="callback">The callback to invoke with the unprotected secret as a string.</param>
         public void UseAsString<T>(T state, Action<T, string> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -247,6 +332,14 @@ namespace CryptKeeper
             }
         }
 
+        /// <summary>
+        /// Allows for use of the protected secret as a string and reliably destroys the secret after use.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="callback">The callback to invoke with the unprotected secret as a string.</param>
+        /// <returns>
+        /// The callback result.
+        /// </returns>
         public TResult UseAsString<TResult>(Func<string, TResult> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -270,6 +363,17 @@ namespace CryptKeeper
             }
         }
 
+        /// <summary>
+        /// Allows for use of the protected secret as a string and reliably destroys the secret after use. Use this overload to pass
+        /// additional state to the callback and avoid closures for hot path code.
+        /// </summary>
+        /// <typeparam name="T">The type of state that will be passed to the provided callback.</typeparam>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="state">The state to be passed to the provided callback.</param>
+        /// <param name="callback">The callback to invoke with the unprotected secret as a string.</param>
+        /// <returns>
+        /// The callback result.
+        /// </returns>
         public TResult UseAsString<T, TResult>(T state, Func<T, string, TResult> callback)
         {
             Contract.Requires<ArgumentNullException>(callback != null);
@@ -293,22 +397,31 @@ namespace CryptKeeper
             }
         }
 
-        private byte[] UnprotectBytes()
+        private unsafe InternalByteHandle UnprotectBytes()
         {
             if (this.size == 0)
             {
-                return new byte[0];
+                return EmptyBytesHandle;
             }
 
-            // TODO: GC can copy this array...must stackalloc (?) or pin (probably in this case).
-            var bytes = new byte[this.size];
+            var handle = new InternalByteHandle(this.size);
             IntPtr ptr = IntPtr.Zero;
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
-                Marshal.Copy(ptr, bytes, 0, this.size);
+                RuntimeHelpers.PrepareConstrainedRegions();
+                try { }
+                finally
+                {
+                    ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
+                }
+
+                // TODO: Use a block copy mechanism that allows pointers...
+                for (int i = 0; i < this.size; ++i)
+                {
+                    handle.P[i] = ((byte*)ptr)[i];
+                }
             }
             finally
             {
@@ -318,7 +431,7 @@ namespace CryptKeeper
                 }
             }
 
-            return bytes;
+            return handle;
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
@@ -326,7 +439,7 @@ namespace CryptKeeper
         {
             if (this.size == 0)
             {
-                return EmptyHandle;
+                return EmptyStringHandle;
             }
 
             var handle = new InternalStringHandle(this.size);
@@ -341,6 +454,7 @@ namespace CryptKeeper
                     ptr = Marshal.SecureStringToBSTR(this.secureValue);
                 }
 
+                // TODO: Use a block copy mechanism that allows pointers...
                 for(int i = 0; i < this.size; ++i)
                 {
                     handle.P[i] = ((char*)ptr)[i]; 
