@@ -156,7 +156,7 @@ namespace CryptKeeper
         }
 
         /// <summary>
-        /// Allows for use of the protected secret as a byte array and reliably destroys the secret after use.
+        /// Allows for use of the protected secret as a GC PINNED byte array and reliably destroys the secret after use.
         /// </summary>
         /// <param name="callback">The callback to invoke with the unprotected secret as a byte array.</param>
         public void UseAsBytes(Action<byte[]> callback)
@@ -183,7 +183,7 @@ namespace CryptKeeper
         }
 
         /// <summary>
-        /// Allows for use of the protected secret as a byte array and reliably destroys the secret after use. Use this overload to pass
+        /// Allows for use of the protected secret as a GC PINNED byte array and reliably destroys the secret after use. Use this overload to pass
         /// additional state to the callback and avoid closures for hot path code.
         /// </summary>
         /// <typeparam name="T">The type of state that will be passed to the provided callback.</typeparam>
@@ -213,7 +213,7 @@ namespace CryptKeeper
         }
 
         /// <summary>
-        /// Allows for use of the protected secret as a byte array and reliably destroys the secret after use.
+        /// Allows for use of the protected secret as a GC PINNED byte array and reliably destroys the secret after use.
         /// </summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
         /// <param name="callback">The callback to invoke with the unprotected secret as a byte array.</param>
@@ -242,7 +242,7 @@ namespace CryptKeeper
         }
 
         /// <summary>
-        /// Allows for use of the protected secret as a byte array and reliably destroys the secret after use. Use this overload to pass
+        /// Allows for use of the protected secret as a GC PINNED byte array and reliably destroys the secret after use. Use this overload to pass
         /// additional state to the callback and avoid closures for hot path code.
         /// </summary>
         /// <typeparam name="T">The type of state that will be passed to the provided callback.</typeparam>
@@ -276,7 +276,7 @@ namespace CryptKeeper
         }
 
         /// <summary>
-        /// Allows for use of the protected secret as a string and reliably destroys the secret after use.
+        /// Allows for use of the protected secret as a GC PINNED string and reliably destroys the secret after use.
         /// </summary>
         /// <param name="callback">The callback to invoke with the unprotected secret as a string.</param>
         public void UseAsString(Action<string> callback)
@@ -303,7 +303,7 @@ namespace CryptKeeper
         }
 
         /// <summary>
-        /// Allows for use of the protected secret as a string and reliably destroys the secret after use. Use this overload to pass
+        /// Allows for use of the protected secret as a GC PINNED string and reliably destroys the secret after use. Use this overload to pass
         /// additional state to the callback and avoid closures for hot path code.
         /// </summary>
         /// <typeparam name="T">The type of state that will be passed to the provided callback.</typeparam>
@@ -333,7 +333,7 @@ namespace CryptKeeper
         }
 
         /// <summary>
-        /// Allows for use of the protected secret as a string and reliably destroys the secret after use.
+        /// Allows for use of the protected secret as a GC PINNED string and reliably destroys the secret after use.
         /// </summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
         /// <param name="callback">The callback to invoke with the unprotected secret as a string.</param>
@@ -364,7 +364,7 @@ namespace CryptKeeper
         }
 
         /// <summary>
-        /// Allows for use of the protected secret as a string and reliably destroys the secret after use. Use this overload to pass
+        /// Allows for use of the protected secret as a GC PINNED string and reliably destroys the secret after use. Use this overload to pass
         /// additional state to the callback and avoid closures for hot path code.
         /// </summary>
         /// <typeparam name="T">The type of state that will be passed to the provided callback.</typeparam>
