@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace CryptKeeper
 {
@@ -55,14 +56,20 @@ namespace CryptKeeper
             try { }
             finally
             {
+                GC.WaitForPendingFinalizers();
+                Thread.MemoryBarrier();
                 if (this.length > 0 && Pin.IsAllocated)
                 {
-                    for (int i = 0; i < length; i++)
+                    var c = (char*)Pin.AddrOfPinnedObject();
+                    if (c != null)
                     {
-                        P[i] = '\0';
-                    }
+                        for (int i = 0; i < length; i++)
+                        {
+                            c[i] = '\0';
+                        }
 
-                    Pin.Free();
+                        Pin.Free();
+                    }
                 }
             }
         }
