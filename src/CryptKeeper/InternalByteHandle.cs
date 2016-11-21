@@ -67,8 +67,9 @@ namespace CryptKeeper
                             p[i] = 0;
                         }
 
-                        Pin.Free();
                     }
+
+                    Pin.Free();
                 }
             }
         }
