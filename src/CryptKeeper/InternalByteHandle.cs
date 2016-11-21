@@ -57,8 +57,6 @@ namespace CryptKeeper
             RuntimeHelpers.PrepareConstrainedRegions();
             try { } finally
             {
-                GC.WaitForPendingFinalizers();
-                Thread.MemoryBarrier();
                 if (this.length > 0 && Pin.IsAllocated)
                 {
                     var p = (byte*)Pin.AddrOfPinnedObject();

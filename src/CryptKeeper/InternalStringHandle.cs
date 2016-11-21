@@ -56,8 +56,6 @@ namespace CryptKeeper
             try { }
             finally
             {
-                GC.WaitForPendingFinalizers();
-                Thread.MemoryBarrier();
                 if (this.length > 0 && Pin.IsAllocated)
                 {
                     var c = (char*)Pin.AddrOfPinnedObject();
