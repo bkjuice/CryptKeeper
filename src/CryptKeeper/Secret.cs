@@ -14,9 +14,13 @@ namespace CryptKeeper
     /// <seealso cref="System.IDisposable" />
     public sealed class Secret : IDisposable
     {
-        private static readonly InternalStringHandle EmptyStringHandle = new InternalStringHandle(0);
+        private static readonly InternalStringHandle EmptyStringHandle = new InternalStringHandle(0, -1);
 
-        private static readonly InternalByteHandle EmptyBytesHandle = new InternalByteHandle(0);
+        private static readonly InternalByteHandle EmptyBytesHandle = new InternalByteHandle(0, -1);
+
+        private readonly PinnedObjectPool<InternalStringHandle> strings;
+
+        private readonly PinnedObjectPool<InternalByteHandle> bytes;
 
         private readonly SecureString secureValue;
 
@@ -28,12 +32,13 @@ namespace CryptKeeper
         /// Initializes a new instance of the <see cref="Secret"/> class to protect binary data.
         /// </summary>
         /// <param name="value">The clear value to protect, which will be destroyed once protected.</param>
+        /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.</param>
         /// <remarks>
         /// Be aware that if the provided value is not pinned on initialization, the garbage collector
         /// can leave behind copies of this value. Prefer to initialize the <see cref="Secret"/> instance
         /// with a <see cref="SecureString"/>.
         /// </remarks>
-        public Secret(byte[] value)
+        public Secret(byte[] value, int pinnedPoolSize = 32) : this(pinnedPoolSize)
         {
             Contract.Requires<ArgumentNullException>(value != null);
             Contract.Requires<ArgumentOutOfRangeException>(value.Length < 2049, "The max supported secret size is 2KB (2048 bytes).");
@@ -72,12 +77,13 @@ namespace CryptKeeper
         /// Initializes a new instance of the <see cref="Secret"/> class to protect string data.
         /// </summary>
         /// <param name="value">The clear value to protect, which will be destroyed once protected.</param>
+        /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.</param>
         /// <remarks>
         /// Be aware that if the provided value is not pinned on initialization, the garbage collector
         /// can leave behind copies of this value. Prefer to initialize the <see cref="Secret"/> instance
         /// with a <see cref="SecureString"/>.
         /// </remarks>
-        public Secret(string value)
+        public Secret(string value, int pinnedPoolSize = 32) : this(pinnedPoolSize)
         {
             Contract.Requires<ArgumentNullException>(value != null);
 
@@ -100,10 +106,11 @@ namespace CryptKeeper
         }
 
         /// <summary>
-        /// (Preferred) Initializes a new instance of the <see cref="Secret"/> class.
+        /// (Preferred) Initializes a new instance of the <see cref="Secret" /> class.
         /// </summary>
-        /// <param name="value">The value as a <see cref="SecureString"/> instance.</param>
-        public Secret(SecureString value)
+        /// <param name="value">The value as a <see cref="SecureString" /> instance.</param>
+        /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.</param>
+        public Secret(SecureString value, int pinnedPoolSize = 32) : this(pinnedPoolSize)
         {
             Contract.Requires<ArgumentNullException>(value != null);
 
@@ -113,6 +120,12 @@ namespace CryptKeeper
             {
                 value.MakeReadOnly();
             }
+        }
+
+        private Secret(int pinnedPoolSize)
+        {
+            this.strings = new PinnedObjectPool<InternalStringHandle>(pinnedPoolSize, i => new InternalStringHandle(this.size, i));
+            this.bytes = new PinnedObjectPool<InternalByteHandle>(pinnedPoolSize, i => new InternalByteHandle(this.size, i));
         }
 
         /// <summary>
@@ -179,6 +192,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
+                this.bytes.Release(handle?.CacheIndex ?? -1);
             }
         }
 
@@ -209,6 +223,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
+                this.bytes.Release(handle?.CacheIndex ?? -1);
             }
         }
 
@@ -238,6 +253,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
+                this.bytes.Release(handle?.CacheIndex ?? -1);
             }
         }
 
@@ -272,6 +288,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
+                this.bytes.Release(handle?.CacheIndex ?? -1);
             }
         }
 
@@ -299,6 +316,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
+                this.strings.Release(handle?.CacheIndex ?? -1);
             }
         }
 
@@ -329,6 +347,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
+                this.strings.Release(handle?.CacheIndex ?? -1);
             }
         }
 
@@ -360,6 +379,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
+                this.strings.Release(handle?.CacheIndex ?? -1);
             }
         }
 
@@ -394,6 +414,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
+                this.strings.Release(handle?.CacheIndex ?? -1);
             }
         }
 
@@ -405,7 +426,7 @@ namespace CryptKeeper
                 return EmptyBytesHandle;
             }
 
-            var handle = new InternalByteHandle(this.size);
+            var handle = this.bytes.Acquire();
             IntPtr ptr = IntPtr.Zero;
 
             RuntimeHelpers.PrepareConstrainedRegions();
@@ -444,7 +465,7 @@ namespace CryptKeeper
                 return EmptyStringHandle;
             }
 
-            var handle = new InternalStringHandle(this.size);
+            var handle = this.strings.Acquire();
             IntPtr ptr = IntPtr.Zero;
             RuntimeHelpers.PrepareConstrainedRegions();
             try

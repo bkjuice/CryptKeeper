@@ -11,9 +11,11 @@ namespace CryptKeeper
 
         public readonly char* P;
 
+        public readonly int CacheIndex;
+
         private readonly int length;
 
-        public InternalStringHandle(int length) 
+        public InternalStringHandle(int length, int index) 
         {
             if (length < 1) return;
 
@@ -25,6 +27,7 @@ namespace CryptKeeper
 
             this.P = (char*)Pin.AddrOfPinnedObject();
             this.length = length;
+            this.CacheIndex = index;
         }
 
         public string Value

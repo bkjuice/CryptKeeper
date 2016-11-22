@@ -7,15 +7,17 @@ namespace CryptKeeper
 {
     internal unsafe class InternalByteHandle 
     {
+        private static readonly byte[] Empty = new byte[0];
+
         public readonly GCHandle Pin;
 
         public readonly byte* P;
 
-        private static readonly byte[] Empty = new byte[0];
+        public readonly int CacheIndex;
 
         private readonly int length;
 
-        public InternalByteHandle(int length) 
+        public InternalByteHandle(int length, int index) 
         {
             if (length < 1) return;
 
@@ -27,6 +29,7 @@ namespace CryptKeeper
 
             this.P = (byte*)Pin.AddrOfPinnedObject();
             this.length = length;
+            this.CacheIndex = index;
         }
 
         public byte[] Value
