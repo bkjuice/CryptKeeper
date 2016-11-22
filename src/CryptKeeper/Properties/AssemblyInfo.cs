@@ -5,9 +5,9 @@ using System.Security;
 
 [assembly: AssemblyTitle("CryptKeeper")]
 [assembly: AssemblyDescription("Thin adapter over select .NET crypto and data protection API's.")]
-[assembly: AssemblyVersion("0.8.1.0")]
-[assembly: AssemblyFileVersion("0.8.1.0")]
-[assembly: AssemblyInformationalVersion("0.8.1-alpha")]
+[assembly: AssemblyVersion("0.8.2.0")]
+[assembly: AssemblyFileVersion("0.8.2.0")]
+[assembly: AssemblyInformationalVersion("0.8.2-alpha")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("At Scale LLC.")]
 [assembly: AssemblyProduct("CryptKeeper")]
