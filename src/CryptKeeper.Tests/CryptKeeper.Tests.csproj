@@ -86,6 +86,7 @@
     <Compile Include="SecretKillerTests.cs" />
     <Compile Include="SecretTests.reliability.Action.cs" />
     <Compile Include="BCLVerificationTests.cs" />
+    <Compile Include="CacheAndReuseSecrets.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

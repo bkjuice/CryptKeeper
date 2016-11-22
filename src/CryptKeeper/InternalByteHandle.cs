@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace CryptKeeper
 {
-    internal unsafe class InternalByteHandle : SafeHandle
+    internal unsafe class InternalByteHandle 
     {
         public readonly GCHandle Pin;
 
@@ -15,7 +15,7 @@ namespace CryptKeeper
 
         private readonly int length;
 
-        public InternalByteHandle(int length) : base(IntPtr.Zero, true)
+        public InternalByteHandle(int length) 
         {
             if (length < 1) return;
 
@@ -42,14 +42,6 @@ namespace CryptKeeper
             }
         }
 
-        public override bool IsInvalid
-        {
-            get
-            {
-                return !Pin.IsAllocated;
-            }
-        }
-
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void Nullify()
         {
@@ -71,13 +63,6 @@ namespace CryptKeeper
                     Pin.Free();
                 }
             }
-        }
-
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        protected override bool ReleaseHandle()
-        {
-            this.Nullify();
-            return true;
         }
     }
 }

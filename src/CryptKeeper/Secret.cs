@@ -457,9 +457,10 @@ namespace CryptKeeper
                 }
 
                 // TODO: Use a block copy mechanism that allows pointers...
-                for(int i = 0; i < this.size; ++i)
+                var ptr2Char = ((char*)ptr);
+                for (int i = 0; i < this.size; ++i)
                 {
-                    handle.P[i] = ((char*)ptr)[i]; 
+                    handle.P[i] = ptr2Char[i]; 
                 }
             }
             finally
