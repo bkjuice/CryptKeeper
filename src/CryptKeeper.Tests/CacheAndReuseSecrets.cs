@@ -31,7 +31,7 @@ namespace CryptKeeper.Tests
         {
             for (int i = 0; i < 1000; ++i)
             {
-                bytesCache[i].UseAsBytes(b=> TheActionLambda(b, i));
+                bytesCache[i].UseAsBytes(b => TheActionLambda(b, i));
             }
         }
 
