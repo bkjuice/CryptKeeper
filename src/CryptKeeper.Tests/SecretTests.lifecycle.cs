@@ -46,6 +46,28 @@ namespace CryptKeeper.Tests
         }
 
         [TestMethod]
+        public void SecretCtorThrowsArgumentOutOfRangeExceptionWhenStringTooLong()
+        {
+            var data = new string('x', 1025);
+            Action test = () => new Secret(data);
+            test.ShouldThrow<ArgumentOutOfRangeException>();
+        }
+
+        [TestMethod]
+        public void SecretCtorThrowsArgumentOutOfRangeExceptionWhenSecureStringTooLong()
+        {
+            var data = new SecureString();
+            for(int i = 0; i < 1026; ++i)
+            {
+                data.AppendChar('x');
+            }
+
+            Action test = () => new Secret(data);
+            test.ShouldThrow<ArgumentOutOfRangeException>();
+        }
+
+
+        [TestMethod]
         public void SecretCtorThrowsArgumentNullExceptionWhenDataIsNull()
         {
             Action test = () => new Secret(default(byte[]));

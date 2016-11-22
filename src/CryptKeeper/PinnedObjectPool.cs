@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
+using System.Runtime.CompilerServices;
+using System.Runtime.ConstrainedExecution;
 
 namespace CryptKeeper
 {
@@ -39,14 +41,21 @@ namespace CryptKeeper
             return allocator(-1);
         }
 
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void Release(int index)
         {
-            if (index < 0)
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { }
+            finally
             {
-                return;
+                if (index >= 0)
+                {
+                    lock (cache)
+                    {
+                        this.cache[index].InUse = false;
+                    }
+                }
             }
-
-            this.cache[index].InUse = false;
         }
 
         private struct PooledInstance

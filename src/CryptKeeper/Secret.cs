@@ -32,16 +32,18 @@ namespace CryptKeeper
         /// Initializes a new instance of the <see cref="Secret"/> class to protect binary data.
         /// </summary>
         /// <param name="value">The clear value to protect, which will be destroyed once protected.</param>
-        /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.</param>
+        /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.  A value of 0 will disable pooling.</param>
         /// <remarks>
         /// Be aware that if the provided value is not pinned on initialization, the garbage collector
         /// can leave behind copies of this value. Prefer to initialize the <see cref="Secret"/> instance
         /// with a <see cref="SecureString"/>.
+        /// The pinned pool will pre-allocate long lived, pinned memory the size of the provided string * the number of concurrent threads * 2.
         /// </remarks>
         public Secret(byte[] value, int pinnedPoolSize = 32) : this(pinnedPoolSize)
         {
             Contract.Requires<ArgumentNullException>(value != null);
             Contract.Requires<ArgumentOutOfRangeException>(value.Length < 2049, "The max supported secret size is 2KB (2048 bytes).");
+            Contract.Requires<ArgumentOutOfRangeException>(pinnedPoolSize > -1);
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try
@@ -77,15 +79,18 @@ namespace CryptKeeper
         /// Initializes a new instance of the <see cref="Secret"/> class to protect string data.
         /// </summary>
         /// <param name="value">The clear value to protect, which will be destroyed once protected.</param>
-        /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.</param>
+        /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.  A value of 0 will disable pooling.</param>
         /// <remarks>
         /// Be aware that if the provided value is not pinned on initialization, the garbage collector
         /// can leave behind copies of this value. Prefer to initialize the <see cref="Secret"/> instance
         /// with a <see cref="SecureString"/>.
+        /// The pinned pool will pre-allocate long lived, pinned memory the size of the provided string * the number of concurrent threads * 2.
         /// </remarks>
         public Secret(string value, int pinnedPoolSize = 32) : this(pinnedPoolSize)
         {
             Contract.Requires<ArgumentNullException>(value != null);
+            Contract.Requires<ArgumentOutOfRangeException>(value.Length < 1025, "The max supported secret size is 2KB (2048 bytes). This means the max string size is 1024 bytes.");
+            Contract.Requires<ArgumentOutOfRangeException>(pinnedPoolSize > -1);
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try
@@ -109,10 +114,13 @@ namespace CryptKeeper
         /// (Preferred) Initializes a new instance of the <see cref="Secret" /> class.
         /// </summary>
         /// <param name="value">The value as a <see cref="SecureString" /> instance.</param>
-        /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.</param>
+        /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.  A value of 0 will disable pooling.</param>
+        /// <remarks>The pinned pool will pre-allocate long lived, pinned memory the size of the provided string * the number of concurrent threads * 2.</remarks>
         public Secret(SecureString value, int pinnedPoolSize = 32) : this(pinnedPoolSize)
         {
             Contract.Requires<ArgumentNullException>(value != null);
+            Contract.Requires<ArgumentOutOfRangeException>(pinnedPoolSize > -1);
+            Contract.Requires<ArgumentOutOfRangeException>(value.Length < 1025, "The max supported secret size is 2KB (2048 bytes). This means the max string size is 1024 bytes.");
 
             this.size = value.Length;
             this.secureValue = value;
