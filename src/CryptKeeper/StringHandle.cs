@@ -6,9 +6,9 @@ using System.Threading;
 
 namespace CryptKeeper
 {
-    internal unsafe class InternalStringHandle : SecretHandle
+    internal unsafe class StringHandle : SecretHandle
     {
-        public InternalStringHandle(int length) : base(length)
+        public StringHandle(int length) : base(length)
         {
             if (length < 1) return;
 

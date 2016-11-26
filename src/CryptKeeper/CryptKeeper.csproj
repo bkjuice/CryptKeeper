@@ -149,8 +149,8 @@
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="SecretHandle.cs" />
-    <Compile Include="InternalByteHandle.cs" />
-    <Compile Include="InternalStringHandle.cs" />
+    <Compile Include="ByteHandle.cs" />
+    <Compile Include="StringHandle.cs" />
     <Compile Include="PinnedObjectPool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Secret.cs" />

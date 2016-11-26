@@ -6,11 +6,11 @@ using System.Threading;
 
 namespace CryptKeeper
 {
-    internal unsafe class InternalByteHandle : SecretHandle
+    internal unsafe class ByteHandle : SecretHandle
     {
         private static readonly byte[] Empty = new byte[0];
 
-        public InternalByteHandle(int length) : base(length)
+        public ByteHandle(int length) : base(length)
         {
             if (length < 1) return;
 

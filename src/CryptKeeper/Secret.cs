@@ -14,13 +14,13 @@ namespace CryptKeeper
     /// <seealso cref="System.IDisposable" />
     public sealed class Secret : IDisposable
     {
-        private static readonly InternalStringHandle EmptyStringHandle = new InternalStringHandle(0);
+        private static readonly StringHandle EmptyStringHandle = new StringHandle(0);
 
-        private static readonly InternalByteHandle EmptyBytesHandle = new InternalByteHandle(0);
+        private static readonly ByteHandle EmptyBytesHandle = new ByteHandle(0);
 
-        private readonly PinnedObjectPool<InternalStringHandle> strings;
+        private readonly PinnedObjectPool<StringHandle> strings;
 
-        private readonly PinnedObjectPool<InternalByteHandle> bytes;
+        private readonly PinnedObjectPool<ByteHandle> bytes;
 
         private readonly SecureString secureValue;
 
@@ -183,8 +183,8 @@ namespace CryptKeeper
 
         private Secret(int pinnedPoolSize)
         {
-            this.strings = new PinnedObjectPool<InternalStringHandle>(pinnedPoolSize, () => new InternalStringHandle(this.size));
-            this.bytes = new PinnedObjectPool<InternalByteHandle>(pinnedPoolSize, () => new InternalByteHandle(this.size));
+            this.strings = new PinnedObjectPool<StringHandle>(pinnedPoolSize, () => new StringHandle(this.size));
+            this.bytes = new PinnedObjectPool<ByteHandle>(pinnedPoolSize, () => new ByteHandle(this.size));
         }
 
         /// <summary>
@@ -236,7 +236,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(InternalByteHandle);
+            var handle = default(ByteHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -266,7 +266,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(InternalByteHandle);
+            var handle = default(ByteHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -295,7 +295,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(InternalByteHandle);
+            var handle = default(ByteHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -329,7 +329,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(InternalByteHandle);
+            var handle = default(ByteHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -356,7 +356,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(InternalStringHandle);
+            var handle = default(StringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -386,7 +386,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            InternalStringHandle handle = default(InternalStringHandle);
+            var handle = default(StringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -417,7 +417,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            InternalStringHandle handle = default(InternalStringHandle);
+            var handle = default(StringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -451,7 +451,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            InternalStringHandle handle = default(InternalStringHandle);
+            var handle = default(StringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -470,7 +470,7 @@ namespace CryptKeeper
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        private unsafe InternalByteHandle UnprotectBytes()
+        private unsafe ByteHandle UnprotectBytes()
         {
             if (this.size == 0)
             {
@@ -509,7 +509,7 @@ namespace CryptKeeper
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        private unsafe InternalStringHandle UnprotectString()
+        private unsafe StringHandle UnprotectString()
         {
             if (this.size == 0)
             {
