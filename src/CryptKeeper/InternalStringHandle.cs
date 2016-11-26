@@ -8,8 +8,6 @@ namespace CryptKeeper
 {
     internal unsafe class InternalStringHandle : SecretHandle
     {
-        private readonly GCHandle Pin;
-
         public InternalStringHandle(int length) : base(length)
         {
             if (length < 1) return;
@@ -17,26 +15,20 @@ namespace CryptKeeper
             RuntimeHelpers.PrepareConstrainedRegions();
             try { } finally
             {
-                this.Pin = GCHandle.Alloc(new string('\0', length), GCHandleType.Pinned);
+                this.Init(GCHandle.Alloc(new string('\0', length), GCHandleType.Pinned));
             }
         }
 
         public char* P()
         {
-            this.Use();
-            return (char*)Pin.AddrOfPinnedObject();
+            return (char*)this.Use();
         }
 
         public string Value
         {
             get
             {
-                if (Pin.IsAllocated)
-                {
-                    return Pin.Target as string;
-                }
-
-                return string.Empty;
+                return this.Target as string ?? string.Empty;
             }
         }
 
@@ -49,7 +41,7 @@ namespace CryptKeeper
             {
                 this.Nullify();
                 Thread.MemoryBarrier();
-                this.Free();
+                this.Release();
             }
         }
 
@@ -60,9 +52,9 @@ namespace CryptKeeper
             try { }
             finally
             {
-                if (this.length > 0 && Pin.IsAllocated)
+                if (this.length > 0)
                 {
-                    var c = (char*)Pin.AddrOfPinnedObject();
+                    var c = (char*)this.Ptr;
                     if (c != null)
                     {
                         for (int i = 0; i < length; i++)
@@ -72,7 +64,7 @@ namespace CryptKeeper
 
                     }
 
-                    Pin.Free();
+                    this.UnpinIfNotCached();
                 }
             }
         }

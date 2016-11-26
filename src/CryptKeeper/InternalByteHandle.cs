@@ -10,8 +10,6 @@ namespace CryptKeeper
     {
         private static readonly byte[] Empty = new byte[0];
 
-        private readonly GCHandle Pin;
-
         public InternalByteHandle(int length) : base(length)
         {
             if (length < 1) return;
@@ -19,26 +17,20 @@ namespace CryptKeeper
             RuntimeHelpers.PrepareConstrainedRegions();
             try { } finally
             {
-                this.Pin = GCHandle.Alloc(new byte[length], GCHandleType.Pinned);
+                this.Init(GCHandle.Alloc(new byte[length], GCHandleType.Pinned));
             }
         }
 
         public byte* P()
         {
-            this.Use();
-            return (byte*)Pin.AddrOfPinnedObject();
+            return (byte*)this.Use();
         }
 
         public byte[] Value
         {
             get
             {
-                if (Pin.IsAllocated)
-                {
-                    return Pin.Target as byte[];
-                }
-
-                return Empty;
+                return this.Target as byte[] ?? Empty;
             }
         }
 
@@ -51,7 +43,7 @@ namespace CryptKeeper
             {
                 this.Nullify();
                 Thread.MemoryBarrier();
-                this.Free();
+                this.Release();
             }
         }
 
@@ -61,9 +53,9 @@ namespace CryptKeeper
             RuntimeHelpers.PrepareConstrainedRegions();
             try { } finally
             {
-                if (this.length > 0 && Pin.IsAllocated)
+                if (this.length > 0)
                 {
-                    var p = (byte*)Pin.AddrOfPinnedObject();
+                    var p = (byte*)this.Ptr;
                     if (p != null)
                     {
                         for (int i = 0; i < length; i++)
@@ -73,7 +65,7 @@ namespace CryptKeeper
 
                     }
 
-                    Pin.Free();
+                    this.UnpinIfNotCached();
                 }
             }
         }

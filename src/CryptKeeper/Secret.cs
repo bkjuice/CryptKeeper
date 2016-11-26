@@ -245,12 +245,12 @@ namespace CryptKeeper
             }
             catch
             {
-                handle.Nullify();
+                handle?.Nullify();
                 throw;
             }
             finally
             {
-                handle.NullifyAndFree();
+                handle?.NullifyAndFree();
             }
         }
 
@@ -275,12 +275,12 @@ namespace CryptKeeper
             }
             catch
             {
-                handle.Nullify();
+                handle?.Nullify();
                 throw;
             }
             finally
             {
-                handle.NullifyAndFree();
+                handle?.NullifyAndFree();
             }
         }
 
@@ -304,12 +304,12 @@ namespace CryptKeeper
             }
             catch
             {
-                handle.Nullify();
+                handle?.Nullify();
                 throw;
             }
             finally
             {
-                handle.NullifyAndFree();
+                handle?.NullifyAndFree();
             }
         }
 
@@ -338,12 +338,12 @@ namespace CryptKeeper
             }
             catch
             {
-                handle.Nullify();
+                handle?.Nullify();
                 throw;
             }
             finally
             {
-                handle.NullifyAndFree();
+                handle?.NullifyAndFree();
             }
         }
 
@@ -365,12 +365,12 @@ namespace CryptKeeper
             }
             catch
             {
-                handle.Nullify();
+                handle?.Nullify();
                 throw;
             }
             finally
             {
-                handle.NullifyAndFree();
+                handle?.NullifyAndFree();
             }
         }
 
@@ -395,12 +395,12 @@ namespace CryptKeeper
             }
             catch
             {
-                handle.Nullify();
+                handle?.Nullify();
                 throw;
             }
             finally
             {
-                handle.NullifyAndFree();
+                handle?.NullifyAndFree();
             }
         }
 
@@ -426,12 +426,12 @@ namespace CryptKeeper
             }
             catch
             {
-                handle.Nullify();
+                handle?.Nullify();
                 throw;
             }
             finally
             {
-                handle.NullifyAndFree();
+                handle?.NullifyAndFree();
             }
         }
 
@@ -460,12 +460,12 @@ namespace CryptKeeper
             }
             catch
             {
-                handle.Nullify();
+                handle?.Nullify();
                 throw;
             }
             finally
             {
-                handle.NullifyAndFree();
+                handle?.NullifyAndFree();
             }
         }
 

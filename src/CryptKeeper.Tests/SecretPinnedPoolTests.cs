@@ -9,66 +9,61 @@ namespace CryptKeeper.Tests
     [TestClass]
     public class SecretPinnedPoolTests
     {
-        private static Secret bytesSecret = new Secret(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 }, 32);
+        private static Secret bytesSecret = new Secret(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 }, 8);
 
-        private static Secret stringSecret = new Secret(new string(new char[] { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' }), 20);
+        private static Secret stringSecret = new Secret(new string(new char[] { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' }), 8);
 
         private static readonly byte[] TheSecret = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
 
         [TestMethod]
-        public void MultiThreadedUseCanExceedPinnedObjectPoolForBytesSecret()
+        public void MultiThreadedUseCanExceedPinnedObjectPoolForBytesSecret50()
         {
-            var allResets = new ManualResetEvent[50];
-            var allThreads = new Thread[50];
-            for (var i = 0; i < 50; ++i)
+            RunNThreads(50, () => 
             {
-                var reset1 = new ManualResetEvent(false);
-                var thread1 = new Thread(() => bytesSecret.UseAsBytes(b =>
+                bytesSecret.UseAsBytes(b =>
                 {
                     b.Should().ContainInOrder(TheSecret);
-                    Thread.Yield();
-                    reset1.Set();
-                }));
+                });
+            });
+        }
 
-                allResets[i] = reset1;
-                allThreads[i] = thread1;
-            }
-
-            Action test = () =>
+        [TestMethod]
+        public void MultiThreadedUseCanExceedPinnedObjectPoolForBytesSecret150()
+        {
+            RunNThreads(150, () =>
             {
-                for (var i = 0; i < 50; ++i)
+                bytesSecret.UseAsBytes(b =>
                 {
-                    allThreads[i].Start();
-                }
-
-                for (var i = 0; i < 50; ++i)
-                {
-                    allResets[i].WaitOne();
-                }
-
-                for (var i = 0; i < 50; ++i)
-                {
-                    allThreads[i].Abort();
-                }
-            };
-
-            test.ShouldNotThrow();
+                    b.Should().ContainInOrder(TheSecret);
+                });
+            });
         }
 
         [TestMethod]
         public void MultiThreadedUseCanExceedPinnedObjectPoolFoStringSecret()
         {
-            var allResets = new ManualResetEvent[50];
-            var allThreads = new Thread[50];
-            for (var i = 0; i < 50; ++i)
+            RunNThreads(50, () =>
             {
-                var reset1 = new ManualResetEvent(false);
-                var thread1 = new Thread(() => stringSecret.UseAsString(b =>
+                stringSecret.UseAsString(b =>
                 {
                     b.Should().Be("1234567890");
+                });
+            });
+        }
+
+        public void RunNThreads(int n, Action assertion)
+        {
+            var allResets = new ManualResetEvent[n];
+            var allThreads = new Thread[n];
+            for (var i = 0; i < n; ++i)
+            {
+                var reset1 = new ManualResetEvent(false);
+                var thread1 = new Thread(() =>
+                {
+                    assertion();
                     Thread.Yield();
                     reset1.Set();
-                }));
+                });
 
                 allResets[i] = reset1;
                 allThreads[i] = thread1;
@@ -76,17 +71,17 @@ namespace CryptKeeper.Tests
 
             Action test = () =>
             {
-                for (var i = 0; i < 50; ++i)
+                for (var i = 0; i < n; ++i)
                 {
                     allThreads[i].Start();
                 }
 
-                for (var i = 0; i < 50; ++i)
+                for (var i = 0; i < n; ++i)
                 {
                     allResets[i].WaitOne();
                 }
 
-                for (var i = 0; i < 50; ++i)
+                for (var i = 0; i < n; ++i)
                 {
                     allThreads[i].Abort();
                 }

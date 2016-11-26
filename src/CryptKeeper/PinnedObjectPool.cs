@@ -42,6 +42,7 @@ namespace CryptKeeper
                     {
                         handle = this.allocator();
                         this.cache[mySlot] = handle;
+                        handle.IsCached = true;
                         return handle;
                     }
 
