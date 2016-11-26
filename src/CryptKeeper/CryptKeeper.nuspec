@@ -7,9 +7,10 @@
     <authors>Bruce Krakower</authors>
     <owners>Bruce Krakower</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <summary>CryptKeeper is a wrapper over the .NET BCL crypto APIs to encourage correct and secure usage.</summary>
+    <summary>CryptKeeper exposes the ability to use SecureString with reliably destroyed clear text.</summary>
     <description>
-      CryptKeeper exposes the ability to use SecureString with reliably destroyed clear text.
+      CryptKeeper exposes the ability to use SecureString with reliably destroyed clear text. You can use the 
+      secret as an array of bytes or a string (if you must).
     </description>
     <copyright>Copyright © 2016</copyright>
     <licenseUrl>https://github.com/bkjuice/CryptKeeper/blob/master/LICENSE</licenseUrl>
