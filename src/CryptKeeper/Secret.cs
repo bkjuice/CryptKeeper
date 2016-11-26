@@ -50,7 +50,9 @@ namespace CryptKeeper
         /// Be aware that if the provided value is not pinned on initialization, the garbage collector
         /// can leave behind copies of this value. Prefer to initialize the <see cref="Secret"/> instance
         /// with a <see cref="SecureString"/>.
-        /// The pinned pool will pre-allocate long lived, pinned memory the size of the provided string * the number of concurrent threads * 2.
+        /// By passing a non-zero value for the pinned pool size, you will pre-allocate long lived, pinned memory 2 * the length of the provided string * the number of concurrent threads.
+        /// This ensures that once GC has taken place, gen0 is no longer heavily pinned, and the fixed buffers used to allocate and destroy clear text are 
+        /// promoted out of gen0 to gen1 or gen2.
         /// </remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
         public Secret(byte[] value, int pinnedPoolSize) : this(pinnedPoolSize)
@@ -106,12 +108,17 @@ namespace CryptKeeper
         /// Initializes a new instance of the <see cref="Secret"/> class to protect string data.
         /// </summary>
         /// <param name="value">The clear value to protect, which will be destroyed once protected.</param>
-        /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.  A value of 0 will disable pooling.</param>
+        /// <param name="pinnedPoolSize">
+        /// The size of the pinned pool of buffers. Pass this value if you expect an estimated number of threads using this secret instance over 
+        /// the life of the application domain.  A value of 0 will disable pooling (default).
+        /// </param>
         /// <remarks>
         /// Be aware that if the provided value is not pinned on initialization, the garbage collector
         /// can leave behind copies of this value. Prefer to initialize the <see cref="Secret"/> instance
         /// with a <see cref="SecureString"/>.
-        /// The pinned pool will pre-allocate long lived, pinned memory the size of the provided string * the number of concurrent threads * 2.
+        /// By passing a non-zero value for the pinned pool size, you will pre-allocate long lived, pinned memory 2 * the length of the provided string * the number of concurrent threads.
+        /// This ensures that once GC has taken place, gen0 is no longer heavily pinned, and the fixed buffers used to allocate and destroy clear text are 
+        /// promoted out of gen0 to gen1 or gen2.
         /// </remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
         public Secret(string value, int pinnedPoolSize) : this(pinnedPoolSize)
@@ -142,7 +149,6 @@ namespace CryptKeeper
         /// (Preferred) Initializes a new instance of the <see cref="Secret" /> class.
         /// </summary>
         /// <param name="value">The value as a <see cref="SecureString" /> instance.</param>
-        /// <remarks>The pinned pool will pre-allocate long lived, pinned memory the size of the provided string * the number of concurrent threads * 2.</remarks>
         public Secret(SecureString value) : this(value, 0)
         {
         }
@@ -151,8 +157,15 @@ namespace CryptKeeper
         /// (Preferred) Initializes a new instance of the <see cref="Secret" /> class.
         /// </summary>
         /// <param name="value">The value as a <see cref="SecureString" /> instance.</param>
-        /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.  A value of 0 will disable pooling.</param>
-        /// <remarks>The pinned pool will pre-allocate long lived, pinned memory the size of the provided string * the number of concurrent threads * 2.</remarks>
+        /// <param name="pinnedPoolSize">
+        /// The size of the pinned pool of buffers. Pass this value if you expect an estimated number of threads using this secret instance over 
+        /// the life of the application domain.  A value of 0 will disable pooling (default).
+        /// </param>
+        /// <remarks>
+        /// By passing a non-zero value for the pinned pool size, you will pre-allocate long lived, pinned memory 2 * the length of the provided string * the number of concurrent threads.
+        /// This ensures that once GC has taken place, gen0 is no longer heavily pinned, and the fixed buffers used to allocate and destroy clear text are 
+        /// promoted out of gen0 to gen1 or gen2.
+        /// </remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
         public Secret(SecureString value, int pinnedPoolSize) : this(pinnedPoolSize)
         {
@@ -237,8 +250,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle.Nullify();
-                handle.Free();
+                handle.NullifyAndFree();
             }
         }
 
@@ -268,8 +280,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle.Nullify();
-                handle.Free();
+                handle.NullifyAndFree();
             }
         }
 
@@ -298,8 +309,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle.Nullify();
-                handle.Free();
+                handle.NullifyAndFree();
             }
         }
 
@@ -333,8 +343,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle.Nullify();
-                handle.Free();
+                handle.NullifyAndFree();
             }
         }
 
@@ -361,8 +370,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle.Nullify();
-                handle.Free();
+                handle.NullifyAndFree();
             }
         }
 
@@ -392,8 +400,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle.Nullify();
-                handle.Free();
+                handle.NullifyAndFree();
             }
         }
 
@@ -424,8 +431,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle.Nullify();
-                handle.Free();
+                handle.NullifyAndFree();
             }
         }
 
@@ -459,8 +465,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle.Nullify();
-                handle.Free();
+                handle.NullifyAndFree();
             }
         }
 
@@ -485,7 +490,6 @@ namespace CryptKeeper
                     ptr = Marshal.SecureStringToCoTaskMemUnicode(this.secureValue);
                 }
 
-                // TODO: Use a block copy mechanism that allows pointers...
                 var p = handle.P();
                 for (int i = 0; i < this.size; ++i)
                 {
@@ -524,7 +528,6 @@ namespace CryptKeeper
                     ptr = Marshal.SecureStringToBSTR(this.secureValue);
                 }
 
-                // TODO: Use a block copy mechanism that allows pointers...
                 var ptr2Char = ((char*)ptr);
                 var c = handle.P();
                 for (int i = 0; i < this.size; ++i)

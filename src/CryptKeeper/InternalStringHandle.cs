@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace CryptKeeper
 {
@@ -38,7 +39,20 @@ namespace CryptKeeper
                 return string.Empty;
             }
         }
-     
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        public void NullifyAndFree()
+        {
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { }
+            finally
+            {
+                this.Nullify();
+                Thread.MemoryBarrier();
+                this.Free();
+            }
+        }
+
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void Nullify()
         {

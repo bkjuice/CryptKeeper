@@ -14,7 +14,7 @@ namespace CryptKeeper
         public bool IsFree { get; private set; }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public void Free()
+        protected void Free()
         {
             try { }
             finally
