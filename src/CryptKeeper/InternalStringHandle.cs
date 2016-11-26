@@ -5,17 +5,11 @@ using System.Runtime.InteropServices;
 
 namespace CryptKeeper
 {
-    internal unsafe class InternalStringHandle
+    internal unsafe class InternalStringHandle : SecretHandle
     {
-        public readonly GCHandle Pin;
+        private readonly GCHandle Pin;
 
-        public readonly char* P;
-
-        public readonly int CacheIndex;
-
-        private readonly int length;
-
-        public InternalStringHandle(int length, int index) 
+        public InternalStringHandle(int length) : base(length)
         {
             if (length < 1) return;
 
@@ -24,10 +18,12 @@ namespace CryptKeeper
             {
                 this.Pin = GCHandle.Alloc(new string('\0', length), GCHandleType.Pinned);
             }
+        }
 
-            this.P = (char*)Pin.AddrOfPinnedObject();
-            this.length = length;
-            this.CacheIndex = index;
+        public char* P()
+        {
+            this.Use();
+            return (char*)Pin.AddrOfPinnedObject();
         }
 
         public string Value

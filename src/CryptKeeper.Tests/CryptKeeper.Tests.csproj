@@ -47,12 +47,12 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FluentAssertions, Version=4.16.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentAssertions.4.16.0\lib\net45\FluentAssertions.dll</HintPath>
+    <Reference Include="FluentAssertions, Version=4.17.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FluentAssertions.4.17.0\lib\net45\FluentAssertions.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FluentAssertions.Core, Version=4.16.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentAssertions.4.16.0\lib\net45\FluentAssertions.Core.dll</HintPath>
+    <Reference Include="FluentAssertions.Core, Version=4.17.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FluentAssertions.4.17.0\lib\net45\FluentAssertions.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -74,6 +74,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="SecretPinnedPoolTests.cs" />
     <Compile Include="SecretTests.lifecycle.cs" />
     <Compile Include="SecretTests.reliability.FuncOfT.cs" />
     <Compile Include="SecretTests.reliability.Func.cs" />
@@ -86,10 +87,7 @@
     <Compile Include="SecretKillerTests.cs" />
     <Compile Include="SecretTests.reliability.Action.cs" />
     <Compile Include="BCLVerificationTests.cs" />
-    <Compile Include="CacheAndReuseSecretTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <Compile Include="SecretCacheAndReuseTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CryptKeeper.ReliabilityProofs.Lib\CryptKeeper.ReliabilityProofs.Lib.csproj">
@@ -100,6 +98,9 @@
       <Project>{75c22a3d-e719-4863-a406-1e3d5e3e33c2}</Project>
       <Name>CryptKeeper</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

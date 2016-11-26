@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="SecretHandle.cs" />
     <Compile Include="InternalByteHandle.cs" />
     <Compile Include="InternalStringHandle.cs" />
     <Compile Include="PinnedObjectPool.cs" />
@@ -157,9 +158,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CryptKeeper.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Design Notes.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

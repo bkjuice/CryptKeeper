@@ -14,9 +14,9 @@ namespace CryptKeeper
     /// <seealso cref="System.IDisposable" />
     public sealed class Secret : IDisposable
     {
-        private static readonly InternalStringHandle EmptyStringHandle = new InternalStringHandle(0, -1);
+        private static readonly InternalStringHandle EmptyStringHandle = new InternalStringHandle(0);
 
-        private static readonly InternalByteHandle EmptyBytesHandle = new InternalByteHandle(0, -1);
+        private static readonly InternalByteHandle EmptyBytesHandle = new InternalByteHandle(0);
 
         private readonly PinnedObjectPool<InternalStringHandle> strings;
 
@@ -32,6 +32,19 @@ namespace CryptKeeper
         /// Initializes a new instance of the <see cref="Secret"/> class to protect binary data.
         /// </summary>
         /// <param name="value">The clear value to protect, which will be destroyed once protected.</param>
+        /// <remarks>
+        /// Be aware that if the provided value is not pinned on initialization, the garbage collector
+        /// can leave behind copies of this value. Prefer to initialize the <see cref="Secret"/> instance
+        /// with a <see cref="SecureString"/>.
+        /// </remarks>
+        public Secret(byte[] value) : this(value, 0)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Secret"/> class to protect binary data.
+        /// </summary>
+        /// <param name="value">The clear value to protect, which will be destroyed once protected.</param>
         /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.  A value of 0 will disable pooling.</param>
         /// <remarks>
         /// Be aware that if the provided value is not pinned on initialization, the garbage collector
@@ -39,7 +52,8 @@ namespace CryptKeeper
         /// with a <see cref="SecureString"/>.
         /// The pinned pool will pre-allocate long lived, pinned memory the size of the provided string * the number of concurrent threads * 2.
         /// </remarks>
-        public Secret(byte[] value, int pinnedPoolSize = 32) : this(pinnedPoolSize)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        public Secret(byte[] value, int pinnedPoolSize) : this(pinnedPoolSize)
         {
             Contract.Requires<ArgumentNullException>(value != null);
             Contract.Requires<ArgumentOutOfRangeException>(value.Length < 2049, "The max supported secret size is 2KB (2048 bytes).");
@@ -79,6 +93,19 @@ namespace CryptKeeper
         /// Initializes a new instance of the <see cref="Secret"/> class to protect string data.
         /// </summary>
         /// <param name="value">The clear value to protect, which will be destroyed once protected.</param>
+        /// <remarks>
+        /// Be aware that if the provided value is not pinned on initialization, the garbage collector
+        /// can leave behind copies of this value. Prefer to initialize the <see cref="Secret"/> instance
+        /// with a <see cref="SecureString"/>.
+        /// </remarks>
+        public Secret(string value) : this(value, 0)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Secret"/> class to protect string data.
+        /// </summary>
+        /// <param name="value">The clear value to protect, which will be destroyed once protected.</param>
         /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.  A value of 0 will disable pooling.</param>
         /// <remarks>
         /// Be aware that if the provided value is not pinned on initialization, the garbage collector
@@ -86,7 +113,8 @@ namespace CryptKeeper
         /// with a <see cref="SecureString"/>.
         /// The pinned pool will pre-allocate long lived, pinned memory the size of the provided string * the number of concurrent threads * 2.
         /// </remarks>
-        public Secret(string value, int pinnedPoolSize = 32) : this(pinnedPoolSize)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        public Secret(string value, int pinnedPoolSize) : this(pinnedPoolSize)
         {
             Contract.Requires<ArgumentNullException>(value != null);
             Contract.Requires<ArgumentOutOfRangeException>(value.Length < 1025, "The max supported secret size is 2KB (2048 bytes). This means the max string size is 1024 bytes.");
@@ -114,9 +142,19 @@ namespace CryptKeeper
         /// (Preferred) Initializes a new instance of the <see cref="Secret" /> class.
         /// </summary>
         /// <param name="value">The value as a <see cref="SecureString" /> instance.</param>
+        /// <remarks>The pinned pool will pre-allocate long lived, pinned memory the size of the provided string * the number of concurrent threads * 2.</remarks>
+        public Secret(SecureString value) : this(value, 0)
+        {
+        }
+
+        /// <summary>
+        /// (Preferred) Initializes a new instance of the <see cref="Secret" /> class.
+        /// </summary>
+        /// <param name="value">The value as a <see cref="SecureString" /> instance.</param>
         /// <param name="pinnedPoolSize">Size of the pinned pool of buffers. Pass this value if you expect a specific number of concurrent threads using the this secret instance.  A value of 0 will disable pooling.</param>
         /// <remarks>The pinned pool will pre-allocate long lived, pinned memory the size of the provided string * the number of concurrent threads * 2.</remarks>
-        public Secret(SecureString value, int pinnedPoolSize = 32) : this(pinnedPoolSize)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        public Secret(SecureString value, int pinnedPoolSize) : this(pinnedPoolSize)
         {
             Contract.Requires<ArgumentNullException>(value != null);
             Contract.Requires<ArgumentOutOfRangeException>(pinnedPoolSize > -1);
@@ -132,8 +170,8 @@ namespace CryptKeeper
 
         private Secret(int pinnedPoolSize)
         {
-            this.strings = new PinnedObjectPool<InternalStringHandle>(pinnedPoolSize, i => new InternalStringHandle(this.size, i));
-            this.bytes = new PinnedObjectPool<InternalByteHandle>(pinnedPoolSize, i => new InternalByteHandle(this.size, i));
+            this.strings = new PinnedObjectPool<InternalStringHandle>(pinnedPoolSize, () => new InternalStringHandle(this.size));
+            this.bytes = new PinnedObjectPool<InternalByteHandle>(pinnedPoolSize, () => new InternalByteHandle(this.size));
         }
 
         /// <summary>
@@ -200,7 +238,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
-                this.bytes.Release(handle?.CacheIndex ?? -1);
+                handle.Free();
             }
         }
 
@@ -231,7 +269,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
-                this.bytes.Release(handle?.CacheIndex ?? -1);
+                handle.Free();
             }
         }
 
@@ -261,7 +299,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
-                this.bytes.Release(handle?.CacheIndex ?? -1);
+                handle.Free();
             }
         }
 
@@ -296,7 +334,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
-                this.bytes.Release(handle?.CacheIndex ?? -1);
+                handle.Free();
             }
         }
 
@@ -324,7 +362,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
-                this.strings.Release(handle?.CacheIndex ?? -1);
+                handle.Free();
             }
         }
 
@@ -355,7 +393,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
-                this.strings.Release(handle?.CacheIndex ?? -1);
+                handle.Free();
             }
         }
 
@@ -387,7 +425,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
-                this.strings.Release(handle?.CacheIndex ?? -1);
+                handle.Free();
             }
         }
 
@@ -422,7 +460,7 @@ namespace CryptKeeper
             finally
             {
                 handle.Nullify();
-                this.strings.Release(handle?.CacheIndex ?? -1);
+                handle.Free();
             }
         }
 
@@ -448,9 +486,10 @@ namespace CryptKeeper
                 }
 
                 // TODO: Use a block copy mechanism that allows pointers...
+                var p = handle.P();
                 for (int i = 0; i < this.size; ++i)
                 {
-                    handle.P[i] = ((byte*)ptr)[i];
+                    p[i] = ((byte*)ptr)[i];
                 }
             }
             finally
@@ -487,9 +526,10 @@ namespace CryptKeeper
 
                 // TODO: Use a block copy mechanism that allows pointers...
                 var ptr2Char = ((char*)ptr);
+                var c = handle.P();
                 for (int i = 0; i < this.size; ++i)
                 {
-                    handle.P[i] = ptr2Char[i]; 
+                    c[i] = ptr2Char[i]; 
                 }
             }
             finally

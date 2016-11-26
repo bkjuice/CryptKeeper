@@ -5,19 +5,13 @@ using System.Runtime.InteropServices;
 
 namespace CryptKeeper
 {
-    internal unsafe class InternalByteHandle 
+    internal unsafe class InternalByteHandle : SecretHandle
     {
         private static readonly byte[] Empty = new byte[0];
 
-        public readonly GCHandle Pin;
+        private readonly GCHandle Pin;
 
-        public readonly byte* P;
-
-        public readonly int CacheIndex;
-
-        private readonly int length;
-
-        public InternalByteHandle(int length, int index) 
+        public InternalByteHandle(int length) : base(length)
         {
             if (length < 1) return;
 
@@ -26,10 +20,12 @@ namespace CryptKeeper
             {
                 this.Pin = GCHandle.Alloc(new byte[length], GCHandleType.Pinned);
             }
+        }
 
-            this.P = (byte*)Pin.AddrOfPinnedObject();
-            this.length = length;
-            this.CacheIndex = index;
+        public byte* P()
+        {
+            this.Use();
+            return (byte*)Pin.AddrOfPinnedObject();
         }
 
         public byte[] Value

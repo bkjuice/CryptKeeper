@@ -1,68 +1,62 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
+using System.Threading;
 
 namespace CryptKeeper
 {
-    internal class PinnedObjectPool<T> where T: class
+    internal class PinnedObjectPool<T> where T : SecretHandle
     {
-        private readonly PooledInstance[] cache;
+        private readonly T[] cache;
 
-        private Func<int, T> allocator;
+        private Func<T> allocator;
 
-        public PinnedObjectPool(int size, Func<int, T> allocator)
+        private int next;
+
+        public PinnedObjectPool(int size, Func<T> allocator)
         {
             Contract.Requires(size > 0);
+            Contract.Requires(allocator != null);
 
-            this.cache = new PooledInstance[size];
+            this.cache = new T[size];
             this.allocator = allocator;
         }
 
         public T Acquire()
         {
-            lock (cache)
+            var limit = this.cache.Length;
+            if (limit == 0)
             {
-                for (int i = 0; i < cache.Length; ++i)
-                {
-                    if (!cache[i].InUse)
-                    {
-                        if (cache[i].Target == null)
-                        {
-                            cache[i].Target = this.allocator(i);
-                        }
-
-                        cache[i].InUse = true;
-                        return cache[i].Target;
-                    }
-                }
+                return this.allocator();
             }
 
-            return allocator(-1);
-        }
-
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public void Release(int index)
-        {
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
-            finally
+            var mySlot = next;
+            Thread.MemoryBarrier();
+            var wait = new SpinWait();
+            while (wait.Count < limit)
             {
-                if (index >= 0)
+                var slotAfterNext = (mySlot + 1 < limit) ? mySlot + 1 : 0;
+                if (Interlocked.CompareExchange(ref this.next, slotAfterNext, mySlot) == mySlot)
                 {
-                    lock (cache)
+                    var handle = this.cache[mySlot];
+                    if (handle == null)
                     {
-                        this.cache[index].InUse = false;
+                        handle = this.allocator();
+                        this.cache[mySlot] = handle;
+                        return handle;
+                    }
+
+                    if (handle.IsFree)
+                    {
+                        return handle;
                     }
                 }
+
+                wait.SpinOnce();
+                mySlot = slotAfterNext;
             }
-        }
 
-        private struct PooledInstance
-        {
-            public T Target;
-
-            public bool InUse;
+            return this.allocator();
         }
     }
 }
