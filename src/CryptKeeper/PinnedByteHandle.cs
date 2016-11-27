@@ -35,7 +35,7 @@ namespace CryptKeeper
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public void NullifyAndFree()
+        public void NullifyAndRelease()
         {
             RuntimeHelpers.PrepareConstrainedRegions();
             try { }

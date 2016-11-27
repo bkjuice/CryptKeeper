@@ -255,7 +255,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle?.NullifyAndFree();
+                handle?.NullifyAndRelease();
             }
         }
 
@@ -285,7 +285,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle?.NullifyAndFree();
+                handle?.NullifyAndRelease();
             }
         }
 
@@ -314,7 +314,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle?.NullifyAndFree();
+                handle?.NullifyAndRelease();
             }
         }
 
@@ -348,7 +348,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle?.NullifyAndFree();
+                handle?.NullifyAndRelease();
             }
         }
 
@@ -375,7 +375,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle?.NullifyAndFree();
+                handle?.NullifyAndRelease();
             }
         }
 
@@ -405,7 +405,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle?.NullifyAndFree();
+                handle?.NullifyAndRelease();
             }
         }
 
@@ -436,7 +436,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle?.NullifyAndFree();
+                handle?.NullifyAndRelease();
             }
         }
 
@@ -470,7 +470,7 @@ namespace CryptKeeper
             }
             finally
             {
-                handle?.NullifyAndFree();
+                handle?.NullifyAndRelease();
             }
         }
 
