@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
@@ -14,13 +15,13 @@ namespace CryptKeeper
     /// <seealso cref="System.IDisposable" />
     public sealed class Secret : IDisposable
     {
-        private static readonly StringHandle EmptyStringHandle = new StringHandle(0);
+        private static readonly PinnedStringHandle EmptyStringHandle = new PinnedStringHandle(0);
 
-        private static readonly ByteHandle EmptyBytesHandle = new ByteHandle(0);
+        private static readonly PinnedByteHandle EmptyBytesHandle = new PinnedByteHandle(0);
 
-        private readonly PinnedObjectPool<StringHandle> strings;
+        private readonly PinnedObjectPool<PinnedStringHandle> strings;
 
-        private readonly PinnedObjectPool<ByteHandle> bytes;
+        private readonly PinnedObjectPool<PinnedByteHandle> bytes;
 
         private readonly SecureString secureValue;
 
@@ -39,6 +40,8 @@ namespace CryptKeeper
         /// </remarks>
         public Secret(byte[] value) : this(value, 0)
         {
+            Contract.Requires<ArgumentNullException>(value != null);
+            Contract.Requires<ArgumentOutOfRangeException>(value.Length < 2049, "The max supported secret size is 2KB (2048 bytes).");
         }
 
         /// <summary>
@@ -54,8 +57,9 @@ namespace CryptKeeper
         /// This ensures that once GC has taken place, gen0 is no longer heavily pinned, and the fixed buffers used to allocate and destroy clear text are 
         /// promoted out of gen0 to gen1 or gen2.
         /// </remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
-        public Secret(byte[] value, int pinnedPoolSize) : this(pinnedPoolSize)
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        [SuppressMessage("Microsoft.Contracts", "TestAlwaysEvaluatingToAConstant", Justification = "This is a false positive from a compiler generated condition due to the fixed keyword.")]
+        public Secret(byte[] value, int pinnedPoolSize) : this(pinnedPoolSize, value?.Length)
         {
             Contract.Requires<ArgumentNullException>(value != null);
             Contract.Requires<ArgumentOutOfRangeException>(value.Length < 2049, "The max supported secret size is 2KB (2048 bytes).");
@@ -64,10 +68,8 @@ namespace CryptKeeper
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                this.size = value.Length;
                 var len = ((value.Length - 1) / 2) + 1;
                 var chars = new char[len];
-
                 RuntimeHelpers.PrepareConstrainedRegions();
                 try
                 {
@@ -102,6 +104,8 @@ namespace CryptKeeper
         /// </remarks>
         public Secret(string value) : this(value, 0)
         {
+            Contract.Requires<ArgumentNullException>(value != null);
+            Contract.Requires<ArgumentOutOfRangeException>(value.Length < 1025, "The max supported secret size is 2KB (2048 bytes). This means the max string size is 1024 bytes.");
         }
 
         /// <summary>
@@ -120,8 +124,9 @@ namespace CryptKeeper
         /// This ensures that once GC has taken place, gen0 is no longer heavily pinned, and the fixed buffers used to allocate and destroy clear text are 
         /// promoted out of gen0 to gen1 or gen2.
         /// </remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
-        public Secret(string value, int pinnedPoolSize) : this(pinnedPoolSize)
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        [SuppressMessage("Microsoft.Contracts", "TestAlwaysEvaluatingToAConstant", Justification = "This is a false positive from a compiler generated condition due to the fixed keyword.")]
+        public Secret(string value, int pinnedPoolSize) : this(pinnedPoolSize, value?.Length)
         {
             Contract.Requires<ArgumentNullException>(value != null);
             Contract.Requires<ArgumentOutOfRangeException>(value.Length < 1025, "The max supported secret size is 2KB (2048 bytes). This means the max string size is 1024 bytes.");
@@ -130,7 +135,6 @@ namespace CryptKeeper
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
-                this.size = value.Length;
                 unsafe { fixed (char* p = value) this.secureValue = new SecureString(p, value.Length); }
                 this.secureValue.MakeReadOnly();
             }
@@ -166,14 +170,14 @@ namespace CryptKeeper
         /// This ensures that once GC has taken place, gen0 is no longer heavily pinned, and the fixed buffers used to allocate and destroy clear text are 
         /// promoted out of gen0 to gen1 or gen2.
         /// </remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
-        public Secret(SecureString value, int pinnedPoolSize) : this(pinnedPoolSize)
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        [SuppressMessage("Microsoft.Contracts", "TestAlwaysEvaluatingToAConstant", Justification = "This is a false positive from a compiler generated condition due to the fixed keyword.")]
+        public Secret(SecureString value, int pinnedPoolSize) : this(pinnedPoolSize, value?.Length)
         {
             Contract.Requires<ArgumentNullException>(value != null);
             Contract.Requires<ArgumentOutOfRangeException>(pinnedPoolSize > -1);
             Contract.Requires<ArgumentOutOfRangeException>(value.Length < 1025, "The max supported secret size is 2KB (2048 bytes). This means the max string size is 1024 bytes.");
 
-            this.size = value.Length;
             this.secureValue = value;
             if (!value.IsReadOnly())
             {
@@ -181,10 +185,11 @@ namespace CryptKeeper
             }
         }
 
-        private Secret(int pinnedPoolSize)
+        private Secret(int pinnedPoolSize, int? size)
         {
-            this.strings = new PinnedObjectPool<StringHandle>(pinnedPoolSize, () => new StringHandle(this.size));
-            this.bytes = new PinnedObjectPool<ByteHandle>(pinnedPoolSize, () => new ByteHandle(this.size));
+            this.size = size.GetValueOrDefault();
+            this.strings = new PinnedObjectPool<PinnedStringHandle>(pinnedPoolSize, () => new PinnedStringHandle(this.size));
+            this.bytes = new PinnedObjectPool<PinnedByteHandle>(pinnedPoolSize, () => new PinnedByteHandle(this.size));
         }
 
         /// <summary>
@@ -236,7 +241,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(ByteHandle);
+            var handle = default(PinnedByteHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -266,7 +271,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(ByteHandle);
+            var handle = default(PinnedByteHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -295,7 +300,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(ByteHandle);
+            var handle = default(PinnedByteHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -329,7 +334,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(ByteHandle);
+            var handle = default(PinnedByteHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -356,7 +361,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(StringHandle);
+            var handle = default(PinnedStringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -386,7 +391,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(StringHandle);
+            var handle = default(PinnedStringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -417,7 +422,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(StringHandle);
+            var handle = default(PinnedStringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -451,7 +456,7 @@ namespace CryptKeeper
             Contract.Requires<ArgumentNullException>(callback != null);
             this.ThrowIfDisposed();
 
-            var handle = default(StringHandle);
+            var handle = default(PinnedStringHandle);
             RuntimeHelpers.PrepareConstrainedRegions();
             try
             {
@@ -469,8 +474,7 @@ namespace CryptKeeper
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        private unsafe ByteHandle UnprotectBytes()
+        private unsafe PinnedByteHandle UnprotectBytes()
         {
             if (this.size == 0)
             {
@@ -507,9 +511,8 @@ namespace CryptKeeper
             return handle;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        private unsafe StringHandle UnprotectString()
+        private unsafe PinnedStringHandle UnprotectString()
         {
             if (this.size == 0)
             {

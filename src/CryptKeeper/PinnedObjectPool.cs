@@ -14,7 +14,7 @@ namespace CryptKeeper
 
         public PinnedObjectPool(int size, Func<T> allocator)
         {
-            Contract.Requires(size > 0);
+            Contract.Requires(size > -1);
             Contract.Requires(allocator != null);
 
             this.cache = new T[size];

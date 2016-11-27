@@ -6,29 +6,31 @@ using System.Threading;
 
 namespace CryptKeeper
 {
-    internal unsafe class StringHandle : SecretHandle
+    internal unsafe class PinnedByteHandle : SecretHandle
     {
-        public StringHandle(int length) : base(length)
+        private static readonly byte[] Empty = new byte[0];
+
+        public PinnedByteHandle(int length) : base(length)
         {
             if (length < 1) return;
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try { } finally
             {
-                this.Init(GCHandle.Alloc(new string('\0', length), GCHandleType.Pinned));
+                this.Init(GCHandle.Alloc(new byte[length], GCHandleType.Pinned));
             }
         }
 
-        public char* P()
+        public byte* P()
         {
-            return (char*)this.Use();
+            return (byte*)this.Use();
         }
 
-        public string Value
+        public byte[] Value
         {
             get
             {
-                return this.Target as string ?? string.Empty;
+                return this.Target as byte[] ?? Empty;
             }
         }
 
@@ -49,17 +51,16 @@ namespace CryptKeeper
         public void Nullify()
         {
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
-            finally
+            try { } finally
             {
                 if (this.length > 0)
                 {
-                    var c = (char*)this.Ptr;
-                    if (c != null)
+                    var p = (byte*)this.Ptr;
+                    if (p != null)
                     {
                         for (int i = 0; i < length; i++)
                         {
-                            c[i] = '\0';
+                            p[i] = 0;
                         }
 
                     }
