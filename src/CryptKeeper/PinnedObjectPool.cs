@@ -28,12 +28,12 @@ namespace CryptKeeper
             {
                 return this.allocator();
             }
-
-            var mySlot = next;
-            Thread.MemoryBarrier();
+            
             var wait = new SpinWait();
             while (wait.Count < limit)
             {
+                var mySlot = next;
+                Thread.MemoryBarrier();
                 var slotAfterNext = (mySlot + 1 < limit) ? mySlot + 1 : 0;
                 if (Interlocked.CompareExchange(ref this.next, slotAfterNext, mySlot) == mySlot)
                 {
@@ -53,7 +53,6 @@ namespace CryptKeeper
                 }
 
                 wait.SpinOnce();
-                mySlot = slotAfterNext;
             }
 
             return this.allocator();
