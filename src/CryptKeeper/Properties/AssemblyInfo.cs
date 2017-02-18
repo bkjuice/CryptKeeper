@@ -4,10 +4,10 @@ using System.Runtime.InteropServices;
 using System.Security;
 
 [assembly: AssemblyTitle("CryptKeeper")]
-[assembly: AssemblyDescription("Thin adapter over select .NET crypto and data protection API's.")]
-[assembly: AssemblyVersion("0.9.2.0")]
-[assembly: AssemblyFileVersion("0.9.2.0")]
-[assembly: AssemblyInformationalVersion("0.9.2.0")]
+[assembly: AssemblyDescription("Thin adapter over select .NET crypto and data protection API's to use secrets in as narrow a scope as possible with assured destruction.")]
+[assembly: AssemblyVersion("0.9.2.1")]
+[assembly: AssemblyFileVersion("0.9.2.1")]
+[assembly: AssemblyInformationalVersion("0.9.2.1")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("At Scale LLC.")]
 [assembly: AssemblyProduct("CryptKeeper")]
