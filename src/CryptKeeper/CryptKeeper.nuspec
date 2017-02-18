@@ -9,8 +9,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>CryptKeeper exposes the ability to use SecureString with reliably destroyed clear text.</summary>
     <description>
-      CryptKeeper enables you to store secrets in memory and use SecureString with reliably destroyed clear text. The CryptKeeper 
-      Secret is designed to be thread-safe. You can use the underlying secret as an array of bytes or a string (if you must).
+      CryptKeeper enables you to store secrets in memory and use SecureString with reliably destroyed clear text. The CryptKeeper Secret class is designed to be thread-safe. You can use the underlying secret as an array of bytes or a string (if you must).
     </description>
     <copyright>Copyright © 2016</copyright>
     <licenseUrl>https://github.com/bkjuice/CryptKeeper/blob/master/LICENSE</licenseUrl>
